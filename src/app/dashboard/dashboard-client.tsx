@@ -131,12 +131,12 @@ export default function DashboardClient({
       <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
         {/* LADO IZQUIERDO: Editor (Columnas 3/5 en Desktop) */}
         <div
-          className={`md:col-span-3 space-y-6 overflow-y-auto max-h-[calc(100vh-14rem)] pr-2 ${
-            showMobilePreview ? 'hidden md:block' : 'block'
+          className={`md:col-span-3 flex flex-col min-h-0 ${
+            showMobilePreview ? 'hidden md:flex' : 'flex'
           }`}
         >
           {/* Selectores de Pestaña */}
-          <div className="flex p-1 bg-slate-900 border border-slate-800 rounded-xl max-w-xs">
+          <div className="flex p-1 bg-slate-900 border border-slate-800 rounded-xl max-w-xs mb-6 shrink-0">
             <button
               onClick={() => setActiveTab('links')}
               className={`flex-1 flex items-center justify-center gap-2 text-xs font-bold py-2.5 px-4 rounded-lg transition-all cursor-pointer ${
@@ -161,19 +161,21 @@ export default function DashboardClient({
             </button>
           </div>
 
-          {/* Formulario Correspondiente */}
-          {activeTab === 'links' ? (
-            <LinksManager
-              userId={profile.id}
-              links={links}
-              onLinksUpdate={handleLinksUpdate}
-            />
-          ) : (
-            <ProfileForm
-              profile={profile}
-              onProfileUpdate={handleProfileUpdate}
-            />
-          )}
+          {/* Formulario Correspondiente - Scrollable */}
+          <div className="flex-1 min-h-0 overflow-y-auto pr-2 -mr-2">
+            {activeTab === 'links' ? (
+              <LinksManager
+                userId={profile.id}
+                links={links}
+                onLinksUpdate={handleLinksUpdate}
+              />
+            ) : (
+              <ProfileForm
+                profile={profile}
+                onProfileUpdate={handleProfileUpdate}
+              />
+            )}
+          </div>
         </div>
 
         {/* LADO DERECHO: Teléfono Virtual (Columnas 2/5 en Desktop) */}

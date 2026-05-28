@@ -60,10 +60,10 @@ export default function ResetPasswordPage() {
     }
   }
 
-  return (
-    <main className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 px-4 py-8">
-      <div className="w-full max-w-md my-4">
-        <div className="text-center mb-8">
+return (
+    <main className="h-screen w-full flex flex-col items-center justify-center bg-slate-950 px-4 overflow-hidden">
+      <div className="w-full max-w-md flex flex-col items-center justify-center flex-1 py-8">
+        <div className="text-center mb-6 shrink-0">
           <div className="flex justify-center mb-4">
             <Image
               src="/logo.svg"
@@ -152,7 +152,7 @@ export default function ResetPasswordPage() {
         </div>
       </div>
 
-      <footer className="mt-auto py-6 text-center text-xs text-slate-500 border-t border-slate-900 w-full max-w-md px-4">
+      <footer className="mt-6 text-center text-xs text-slate-500 shrink-0">
         <p>
           Nilspineda (<a href="https://nilspineda.com" target="_blank" rel="noopener noreferrer" className="hover:underline text-slate-400">nilspineda.com</a>)
         </p>

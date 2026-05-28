@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -228,6 +228,11 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
   const [editTitle, setEditTitle] = useState('')
   const [editUrl, setEditUrl] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const {
     register,
@@ -506,59 +511,96 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
         </form>
       )}
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext items={links.map((l) => l.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-3.5">
-            {links.length > 0 ? (
-              links.map((link, idx) => (
-                <SortableLink
-                  key={link.id}
-                  link={link}
-                  index={idx}
-                  editingId={editingId}
-                  editTitle={editTitle}
-                  editUrl={editUrl}
-                  links={links}
-                  onStartEditing={startEditing}
-                  onSaveEdit={handleSaveEdit}
-                  onDeleteLink={handleDeleteLink}
-                  onToggleActive={handleToggleActive}
-                  onMove={handleMove}
-                  onEditTitleChange={setEditTitle}
-                  onEditUrlChange={setEditUrl}
-                />
-              ))
-            ) : (
-              <div className="border-2 border-dashed border-slate-800 rounded-2xl p-8 text-center text-slate-500 animate-fade-in">
-                <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-                <p className="text-sm font-semibold">No tienes enlaces registrados</p>
-                <p className="text-xs mt-1">
-                  Agrega tu primer enlace usando el botón superior "Añadir enlace".
-                </p>
-              </div>
-            )}
-          </div>
-        </SortableContext>
-
-        <DragOverlay>
-          {activeLink ? (
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 flex gap-3 shadow-2xl ring-2 ring-[#28af90]">
-              <div className="flex items-center justify-center text-slate-400">
-                <GripVertical className="w-5 h-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-white text-sm truncate">{activeLink.title}</h4>
-                <span className="text-xs text-[#28af90] truncate">{activeLink.url}</span>
-              </div>
+      {mounted ? (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={links.map((l) => l.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-3.5">
+              {links.length > 0 ? (
+                links.map((link, idx) => (
+                  <SortableLink
+                    key={link.id}
+                    link={link}
+                    index={idx}
+                    editingId={editingId}
+                    editTitle={editTitle}
+                    editUrl={editUrl}
+                    links={links}
+                    onStartEditing={startEditing}
+                    onSaveEdit={handleSaveEdit}
+                    onDeleteLink={handleDeleteLink}
+                    onToggleActive={handleToggleActive}
+                    onMove={handleMove}
+                    onEditTitleChange={setEditTitle}
+                    onEditUrlChange={setEditUrl}
+                  />
+                ))
+              ) : (
+                <div className="border-2 border-dashed border-slate-800 rounded-2xl p-8 text-center text-slate-500 animate-fade-in">
+                  <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-slate-600" />
+                  <p className="text-sm font-semibold">No tienes enlaces registrados</p>
+                  <p className="text-xs mt-1">
+                    Agrega tu primer enlace usando el botón superior "Añadir enlace".
+                  </p>
+                </div>
+              )}
             </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+          </SortableContext>
+
+          <DragOverlay>
+            {activeLink ? (
+              <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 flex gap-3 shadow-2xl ring-2 ring-[#28af90]">
+                <div className="flex items-center justify-center text-slate-400">
+                  <GripVertical className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-white text-sm truncate">{activeLink.title}</h4>
+                  <span className="text-xs text-[#28af90] truncate">{activeLink.url}</span>
+                </div>
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      ) : (
+        <div className="space-y-3.5">
+          {links.length > 0 ? (
+            links.map((link, idx) => (
+              <div
+                key={link.id}
+                className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex gap-3 transition-all duration-200"
+              >
+                <div className="flex items-center justify-center text-slate-500">
+                  <GripVertical className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-white text-sm truncate">{link.title}</h4>
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-[#28af90] hover:underline flex items-center gap-1 truncate"
+                  >
+                    {link.url}
+                    <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+                  </a>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="border-2 border-dashed border-slate-800 rounded-2xl p-8 text-center text-slate-500">
+              <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-slate-600" />
+              <p className="text-sm font-semibold">No tienes enlaces registrados</p>
+              <p className="text-xs mt-1">
+                Agrega tu primer enlace usando el botón superior "Añadir enlace".
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

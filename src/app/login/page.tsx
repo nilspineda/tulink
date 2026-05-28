@@ -159,9 +159,9 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 px-4 py-8">
-      <div className="w-full max-w-md my-4">
-        <div className="text-center mb-8">
+    <main className="h-screen w-full flex flex-col items-center justify-center bg-slate-950 px-4 overflow-hidden">
+      <div className="w-full max-w-md flex flex-col items-center justify-center flex-1 py-8">
+        <div className="text-center mb-6 shrink-0">
           <div className="flex justify-center mb-4">
             <Image
               src="/logo.svg"
@@ -184,16 +184,16 @@ export default function LoginPage() {
         }>
           <LoginForm />
         </Suspense>
-      </div>
 
-      <footer className="mt-auto py-6 text-center text-xs text-slate-500 border-t border-slate-900 w-full max-w-md px-4">
-        <p>
-          Nilspineda (<a href="https://nilspineda.com" target="_blank" rel="noopener noreferrer" className="hover:underline text-slate-400">nilspineda.com</a>)
-        </p>
-        <p className="mt-1">
-          WhatsApp: <a href="https://wa.me/573167195500" target="_blank" rel="noopener noreferrer" className="hover:underline text-slate-400">+57 316 7195500</a>
-        </p>
-      </footer>
+        <footer className="mt-6 text-center text-xs text-slate-500 shrink-0">
+          <p>
+            Nilspineda (<a href="https://nilspineda.com" target="_blank" rel="noopener noreferrer" className="hover:underline text-slate-400">nilspineda.com</a>)
+          </p>
+          <p className="mt-1">
+            WhatsApp: <a href="https://wa.me/573167195500" target="_blank" rel="noopener noreferrer" className="hover:underline text-slate-400">+57 316 7195500</a>
+          </p>
+        </footer>
+      </div>
     </main>
   )
 }

@@ -9,7 +9,9 @@
   --primary-hover: #1e876e;
   --brand: #28af90;
   --brand-hover: #1e876e;
-  --font-sans: var(--font-dm-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-sans:
+    var(--font-dm-sans), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 [data-theme="glass"] {
@@ -82,12 +84,28 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
   min-height: 100vh;
   margin: 0;
   padding: 0;
   overscroll-behavior: none;
   overflow-x: hidden;
+}
+/* Safety: ensure Next.js root doesn't create horizontal overflow and background covers viewport */
+#__next {
+  min-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Force dark page background behind any accidental gaps caused by elements */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: #071022; /* dark fallback */
+  z-index: -1;
 }
 
 .glass-effect {
@@ -117,6 +135,15 @@ body {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Ocultar scrollbars en carruseles y contenedores específicos */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 
 @media (prefers-reduced-motion: reduce) {

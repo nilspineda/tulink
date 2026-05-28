@@ -1,10 +1,16 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Smartphone, Shield, Sparkles, Link2 } from 'lucide-react'
+import PartnerCarousel from '../components/partner-carousel'
+
+export const metadata = {
+  title: 'tulink - Tu Página de Enlaces Personalizada',
+  description: 'Crea tu página de enlaces personalizada en segundos. Comparte tus perfiles sociales, portafolios y proyectos con un diseño elegante y responsive.',
+}
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Luces de Fondo (Gradientes) - ocultos en móvil */}
       <div className="hidden sm:block absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[#28af90]/10 blur-[120px] pointer-events-none"></div>
       <div className="hidden sm:block absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#28af90]/5 blur-[120px] pointer-events-none"></div>
@@ -108,8 +114,33 @@ export default function LandingPage() {
         </section>
       </main>
 
+      <section className="bg-slate-900/40 backdrop-blur-md py-16 sm:py-20 mt-20 sm:mt-24 w-full px-4 sm:px-0 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">¿Listo para transformar tu presencia online?</h2>
+        <Link
+          href="/register"
+          className="inline-flex items-center gap-2 bg-[#28af90] hover:bg-[#1e876e] text-white font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-200 shadow-lg shadow-[#28af90]/30 active:scale-98 cursor-pointer"
+        >
+          <span className="text-sm sm:text-base">Crear mi tulink</span>
+          <ArrowRight className="w-5 h-5" />
+        </Link>
+
+         {/* Sección de Patrocinadores o Colaboradores */}
+         <div className="mt-12">
+          <h3 className="text-sm text-slate-400 uppercase tracking-wider mb-4">Colaboradores Destacados</h3>
+          <div className="flex items-center justify-center gap-8">
+            <a href="https://nilspineda.com" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity duration-200"> <img src="nilspineda.svg"  alt="nilspineda.com" className="h-12 sm:h-8" />
+             
+            </a>
+            
+          </div>
+        </div>
+        
+        {/* Empresas Aliadas (carrusel) */}
+        {/* El componente es cliente y se encuentra en src/components/partner-carousel.tsx */}
+        <PartnerCarousel />
+      </section>
       {/* Footer */}
-      <footer className="border-t border-slate-900 py-6 sm:py-8 bg-slate-950/60 mt-auto text-center z-10 text-xs text-slate-500 px-4">
+      <footer className="border-t border-slate-900 py-6 sm:py-8 bg-slate-950/60 mt-auto text-center z-10 text-xs text-white px-4">
         <p className="font-semibold uppercase tracking-wider mb-2">
           © {new Date().getFullYear()} tulink.dev
         </p>
