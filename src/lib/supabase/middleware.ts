@@ -26,10 +26,17 @@ export async function updateSession(request: NextRequest) {
     },
   })
 
-  // Refresca la sesión si está expirada o a punto de expirar
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
+
+  try {
+    const {
+      data: { user: sessionUser },
+    } = await supabase.auth.getUser()
+    user = sessionUser
+  } catch {
+    // Network errors or fetch failures in Edge runtime - continue unauthenticated
+    user = null
+  }
 
   // Proteger rutas privadas (/dashboard)
   if (request.nextUrl.pathname.startsWith('/dashboard') && !user) {
