@@ -90,7 +90,6 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  overscroll-behavior: none;
   overflow-x: hidden;
 }
 /* Safety: ensure Next.js root doesn't create horizontal overflow and background covers viewport */

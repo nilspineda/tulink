@@ -135,8 +135,7 @@ export default function LandingPage() {
           </div>
         </div>
         
-        {/* Empresas Aliadas (carrusel) */}
-        {/* El componente es cliente y se encuentra en src/components/partner-carousel.tsx */}
+     
         <PartnerCarousel />
       </section>
       {/* Footer */}
