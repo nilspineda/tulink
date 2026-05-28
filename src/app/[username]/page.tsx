@@ -158,6 +158,42 @@ export default async function UserProfilePage({ params }: PageProps) {
   const instagramLink = activeLinks.find((l) => l.url.includes('instagram.com'))?.url
   const tiktokLink = activeLinks.find((l) => l.url.includes('tiktok.com'))?.url
 
+  // Extraer el primer video embebido
+  const videoLink = activeLinks.find((l) => l.embed_type === 'video')
+  const normalLinks = activeLinks.filter((l) => l.embed_type !== 'video')
+
+  // Función para convertir URL de video a formato embed
+  const getEmbedUrl = (url: string) => {
+    // YouTube - varios formatos
+    if (url.includes('youtube.com/watch')) {
+      return url.replace('watch?v=', 'embed/')
+    }
+    if (url.includes('youtu.be/')) {
+      return url.replace('youtu.be/', 'www.youtube.com/embed/')
+    }
+    if (url.includes('youtube.com/embed/')) {
+      return url
+    }
+    if (url.includes('youtube.com/@')) {
+      // Canales de YouTube - convertir a embed
+      const channelMatch = url.match(/youtube\.com\/@([^/?]+)/)
+      if (channelMatch) {
+        return `https://www.youtube.com/embed/${channelMatch[1]}`
+      }
+    }
+    // Vimeo
+    if (url.includes('vimeo.com/')) {
+      if (url.includes('player.vimeo.com')) {
+        return url
+      }
+      const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
+      if (vimeoMatch) {
+        return `https://player.vimeo.com/video/${vimeoMatch[1]}`
+      }
+    }
+    return url
+  }
+
   // Obtener tema del perfil
   const theme = THEME_STYLES[profile.theme_color] || THEME_STYLES.default
 
@@ -265,10 +301,26 @@ export default async function UserProfilePage({ params }: PageProps) {
           )}
         </div>
 
-        {/* 3. Enlaces Activos */}
+        {/* 3. Video Embebido (máx 1, debajo del nombre y redes, arriba de los botones) */}
+        {videoLink && (
+          <div className="w-full px-6 py-4 z-10">
+            <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-lg bg-black">
+              <iframe
+                src={getEmbedUrl(videoLink.url)}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title={videoLink.title}
+                loading="lazy"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* 4. Enlaces Activos (solo botones, sin videos) */}
         <div className="w-full px-6 flex flex-col gap-4 mb-16 z-10">
-          {activeLinks.length > 0 ? (
-            activeLinks.map((link) => (
+          {normalLinks.length > 0 ? (
+            normalLinks.map((link) => (
               <a
                 key={link.id}
                 href={link.url}

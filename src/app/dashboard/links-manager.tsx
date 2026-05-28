@@ -35,6 +35,7 @@ interface LinkItem {
   id: string
   title: string
   url: string
+  embed_type: string
   active: boolean
   sort_order: number
 }
@@ -48,6 +49,7 @@ interface LinksManagerProps {
 const linkSchema = z.object({
   title: z.string().min(1, { message: 'El título es obligatorio' }),
   url: z.string().min(1, { message: 'La URL o número de WhatsApp es obligatorio' }),
+  embed_type: z.string(),
 })
 
 type LinkFormValues = z.infer<typeof linkSchema>
@@ -238,14 +240,18 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<LinkFormValues>({
     resolver: zodResolver(linkSchema),
     defaultValues: {
       title: '',
       url: '',
+      embed_type: 'link',
     },
   })
+
+  const embedType = watch('embed_type')
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -284,6 +290,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
           user_id: userId,
           title: values.title,
           url: formattedUrl,
+          embed_type: values.embed_type || 'link',
           active: true,
           sort_order: nextSortOrder,
         })
@@ -477,11 +484,24 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
 
             <div>
               <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                Dirección URL o Teléfono de WhatsApp
+                Tipo de enlace
+              </label>
+              <select
+                {...register('embed_type')}
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] text-xs transition-all"
+              >
+                <option value="link">Enlace normal</option>
+                <option value="video">Video embebido (YouTube/Vimeo)</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                {embedType === 'video' ? 'URL del video (YouTube/Vimeo)' : 'Dirección URL o Teléfono de WhatsApp'}
               </label>
               <input
                 type="text"
-                placeholder="Ej. https://youtube.com/c/nombre o 573167195500"
+                placeholder={embedType === 'video' ? 'Ej. https://youtube.com/watch?v=...' : 'Ej. https://youtube.com/c/nombre o 573167195500'}
                 {...register('url')}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-650 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] text-xs transition-all"
               />

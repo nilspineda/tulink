@@ -47,6 +47,7 @@ create table if not exists public.links (
   user_id uuid references public.profiles(id) on delete cascade not null,
   title text not null,
   url text not null,
+  embed_type text default 'link' not null,
   active boolean default true not null,
   sort_order integer default 0 not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null

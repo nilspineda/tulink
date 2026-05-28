@@ -16,6 +16,7 @@ interface LinkItem {
   id: string
   title: string
   url: string
+  embed_type: string
   active: boolean
   sort_order: number
 }

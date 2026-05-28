@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Smartphone, Shield, Sparkles, Link2 } from 'lucide-react'
+import { ArrowRight, Smartphone, Shield, Sparkles, Link2, QrCode, Infinity, Video } from 'lucide-react'
 import PartnerCarousel from '../components/partner-carousel'
 
 export const metadata = {
@@ -82,33 +82,63 @@ export default function LandingPage() {
 
         {/* Feature Highlights */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-20 sm:mt-24 w-full px-4 sm:px-0 text-left">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-sm">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-sm hover:bg-white/10 transition-colors">
+            <div className="p-2.5 sm:p-3 bg-[#28af90]/10 border border-[#28af90]/20 text-[#28af90] rounded-xl w-max mb-4">
+              <Link2 className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <h3 className="font-bold text-white text-base sm:text-lg">Links Ilimitados</h3>
+            <p className="text-slate-400 mt-2 text-xs sm:text-sm leading-relaxed">
+              Añade todos los enlaces que necesites. Sin límites, sin restricciones.
+            </p>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-sm hover:bg-white/10 transition-colors">
+            <div className="p-2.5 sm:p-3 bg-[#28af90]/10 border border-[#28af90]/20 text-[#28af90] rounded-xl w-max mb-4">
+              <QrCode className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <h3 className="font-bold text-white text-base sm:text-lg">Código QR Único</h3>
+            <p className="text-slate-400 mt-2 text-xs sm:text-sm leading-relaxed">
+              Cada perfil tiene su propio código QR para compartir fácilmente.
+            </p>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-sm hover:bg-white/10 transition-colors">
+            <div className="p-2.5 sm:p-3 bg-[#28af90]/10 border border-[#28af90]/20 text-[#28af90] rounded-xl w-max mb-4">
+              <Infinity className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <h3 className="font-bold text-white text-base sm:text-lg">Gratis para Siempre</h3>
+            <p className="text-slate-400 mt-2 text-xs sm:text-sm leading-relaxed">
+              Todas las funcionalidades son completamente gratuitas, sin planes premium.
+            </p>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-sm hover:bg-white/10 transition-colors">
+            <div className="p-2.5 sm:p-3 bg-[#28af90]/10 border border-[#28af90]/20 text-[#28af90] rounded-xl w-max mb-4">
+              <Video className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <h3 className="font-bold text-white text-base sm:text-lg">Videos Emebidos</h3>
+            <p className="text-slate-400 mt-2 text-xs sm:text-sm leading-relaxed">
+              Muestra tus videos de YouTube y Vimeo directamente en tu perfil.
+            </p>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-sm hover:bg-white/10 transition-colors">
             <div className="p-2.5 sm:p-3 bg-[#28af90]/10 border border-[#28af90]/20 text-[#28af90] rounded-xl w-max mb-4">
               <Smartphone className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <h3 className="font-bold text-white text-base sm:text-lg">Diseño Mobile-First</h3>
             <p className="text-slate-400 mt-2 text-xs sm:text-sm leading-relaxed">
-              Tus seguidores disfrutarán de una experiencia premium adaptada a cualquier pantalla de smartphone.
+              Tus seguidores disfrutarán de una experiencia premium en cualquier pantalla.
             </p>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-sm">
-            <div className="p-2.5 sm:p-3 bg-[#28af90]/10 border border-[#28af90]/20 text-[#28af90] rounded-xl w-max mb-4">
-              <Link2 className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-            <h3 className="font-bold text-white text-base sm:text-lg">Gestión Simple</h3>
-            <p className="text-slate-400 mt-2 text-xs sm:text-sm leading-relaxed">
-              Agrega, edita, ordena y desactiva tus enlaces en tiempo real desde tu panel administrativo intuitivo.
-            </p>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-sm sm:col-span-2 lg:col-span-1">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 sm:p-6 backdrop-blur-sm hover:bg-white/10 transition-colors">
             <div className="p-2.5 sm:p-3 bg-[#28af90]/10 border border-[#28af90]/20 text-[#28af90] rounded-xl w-max mb-4">
               <Shield className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <h3 className="font-bold text-white text-base sm:text-lg">Autenticación Segura</h3>
             <p className="text-slate-400 mt-2 text-xs sm:text-sm leading-relaxed">
-              Protegido mediante Supabase Auth y Row Level Security (RLS), asegurando que sólo tú edites tu contenido.
+              Seguridad avanzada con autenticación y control de acceso
             </p>
           </div>
         </section>

@@ -3,14 +3,11 @@
 import React, { useRef, useState, useEffect } from 'react'
 
 const partners = [
-  { name: 'Concepto Digital', href: 'conceptodigital.com.co', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/vercel.svg' },
+  { name: 'Vercel', href: 'https://vercel.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/vercel.svg' },
   { name: 'Supabase', href: 'https://supabase.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/supabase.svg' },
   { name: 'Tailwind CSS', href: 'https://tailwindcss.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/tailwindcss.svg' },
   { name: 'Stripe', href: 'https://stripe.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/stripe.svg' },
-  { name: 'GitHub', href: 'https://github.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg' },
-  { name: 'GitHub', href: 'https://github.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg' },
-  { name: 'GitHub', href: 'https://github.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg' },
-  { name: 'GitHub', href: 'https://github.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg' },
+  { name: 'Concepto Digital', href: 'https://conceptodigital.com.co', logo: 'https://conceptodigital.com.co/wp-content/uploads/2026/01/LOGO-2025-01-2048x949.png' },
   { name: 'GitHub', href: 'https://github.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg' },
 ]
 
