@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 
 const partners = [
-  { name: 'Vercel', href: 'https://vercel.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/vercel.svg' },
+  { name: 'Concepto Digital', href: 'conceptodigital.com.co', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/vercel.svg' },
   { name: 'Supabase', href: 'https://supabase.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/supabase.svg' },
   { name: 'Tailwind CSS', href: 'https://tailwindcss.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/tailwindcss.svg' },
   { name: 'Stripe', href: 'https://stripe.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/stripe.svg' },
@@ -67,9 +67,9 @@ export default function PartnerCarousel() {
           ref={scrollerRef}
           className="flex gap-5 overflow-x-auto scroll-smooth py-2 scrollbar-hide snap-x snap-mandatory px-8 sm:px-12 justify-start sm:justify-center"
         >
-          {partners.map((p) => (
+          {partners.map((p, i) => (
             <a
-              key={p.name}
+              key={`${p.name}-${i}`}
               data-item
               href={p.href}
               target="_blank"
