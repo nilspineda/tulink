@@ -9,6 +9,78 @@ import {
   MailIcon, ShoppingBag01Icon, HandshakeIcon, GlobeIcon
 } from '@hugeicons/core-free-icons'
 
+const THEME_STYLES: Record<string, {
+  main: string
+  text: string
+  gradient: string
+  footer: string
+  link: string
+  linkHover: string
+  nameOverlay: string
+  bioColor: string
+}> = {
+  default: {
+    main: 'bg-gradient-to-br from-slate-100 via-slate-200 to-slate-300',
+    text: 'text-slate-800',
+    gradient: 'from-slate-100 via-slate-200 to-slate-300',
+    footer: 'text-slate-600',
+    link: 'bg-slate-900 hover:bg-slate-800 text-white',
+    linkHover: 'hover:bg-slate-700',
+    nameOverlay: 'text-white',
+    bioColor: 'text-slate-200',
+  },
+  darkbento: {
+    main: 'bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-700',
+    text: 'text-zinc-100',
+    gradient: 'from-zinc-900 via-zinc-800 to-zinc-700',
+    footer: 'text-zinc-400',
+    link: 'bg-white hover:bg-zinc-200 text-black',
+    linkHover: 'hover:bg-zinc-300',
+    nameOverlay: 'text-white',
+    bioColor: 'text-zinc-300',
+  },
+  glass: {
+    main: 'bg-gradient-to-br from-teal-950 via-teal-900 to-cyan-900',
+    text: 'text-teal-200',
+    gradient: 'from-teal-950 via-teal-900 to-cyan-900',
+    footer: 'text-teal-300',
+    link: 'bg-teal-400/20 hover:bg-teal-400/30 text-teal-100 border border-teal-400/30',
+    linkHover: 'hover:bg-teal-400/40',
+    nameOverlay: 'text-white',
+    bioColor: 'text-teal-200',
+  },
+  sunset: {
+    main: 'bg-gradient-to-br from-amber-100 via-orange-200 to-red-200',
+    text: 'text-orange-950',
+    gradient: 'from-amber-100 via-orange-200 to-red-200',
+    footer: 'text-orange-700',
+    link: 'bg-orange-900 hover:bg-orange-800 text-white',
+    linkHover: 'hover:bg-orange-700',
+    nameOverlay: 'text-white',
+    bioColor: 'text-orange-100',
+  },
+  cyberpunk: {
+    main: 'bg-gradient-to-br from-purple-950 via-purple-900 to-pink-900',
+    text: 'text-green-400',
+    gradient: 'from-purple-950 via-purple-900 to-pink-900',
+    footer: 'text-green-300',
+    link: 'bg-black hover:bg-gray-900 text-green-400 border border-green-400/50',
+    linkHover: 'hover:bg-gray-900',
+    nameOverlay: 'text-green-400',
+    bioColor: 'text-green-300',
+  },
+  neobrutalism: {
+    main: 'bg-gradient-to-br from-yellow-200 via-yellow-300 to-yellow-400',
+    text: 'text-black',
+    gradient: 'from-yellow-200 via-yellow-300 to-yellow-400',
+    footer: 'text-black/60',
+    link: 'bg-black hover:bg-gray-900 text-white',
+    linkHover: 'hover:bg-gray-800',
+    nameOverlay: 'text-black',
+    bioColor: 'text-black/70',
+  },
+}
+
 interface PageProps {
   params: Promise<{ username: string }>
 }
@@ -86,6 +158,9 @@ export default async function UserProfilePage({ params }: PageProps) {
   const instagramLink = activeLinks.find((l) => l.url.includes('instagram.com'))?.url
   const tiktokLink = activeLinks.find((l) => l.url.includes('tiktok.com'))?.url
 
+  // Obtener tema del perfil
+  const theme = THEME_STYLES[profile.theme_color] || THEME_STYLES.default
+
   // Mapear iconos de links de forma coherente con Hugeicons
   const getLinkIcon = (url: string) => {
     const lowercaseUrl = url.toLowerCase()
@@ -143,11 +218,11 @@ export default async function UserProfilePage({ params }: PageProps) {
 
 
   return (
-    <main className="min-h-screen w-full bg-black text-white flex flex-col items-center pb-12 transition-colors duration-300 relative select-none">
+    <main className={`min-h-screen w-full ${theme.main} ${theme.text} flex flex-col items-center pb-12 transition-colors duration-300 relative select-none`}>
       <div className="w-full max-w-md flex flex-col items-center">
 
         {/* 1. Header con Imagen Principal */}
-        <div className="relative w-full h-[380px] shrink-0 bg-slate-900 overflow-hidden">
+        <div className={`relative w-full h-[380px] shrink-0 bg-gradient-to-br ${theme.gradient} overflow-hidden`}>
           {profile.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -156,7 +231,7 @@ export default async function UserProfilePage({ params }: PageProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-tr from-[#112d24] via-[#0b1a15] to-[#040807] flex flex-col items-center justify-center">
+            <div className={`w-full h-full bg-gradient-to-br ${theme.gradient} flex flex-col items-center justify-center`}>
               <span className="text-5xl font-black text-[#28af90]/20 tracking-widest">TULINK</span>
             </div>
           )}
@@ -164,12 +239,12 @@ export default async function UserProfilePage({ params }: PageProps) {
 
           {/* Nombre sobrepuesto */}
           <div className="absolute bottom-4 w-full text-center px-6 z-10">
-            <h1 className="font-extrabold text-2xl sm:text-3xl tracking-tight text-white drop-shadow-md">
+            <h1 className={`font-extrabold text-2xl sm:text-3xl tracking-tight ${theme.nameOverlay} drop-shadow-md`}>
               {profile.full_name || `@${profile.username}`}
             </h1>
 
             {profile.bio && (
-              <p className="text-xs text-slate-300 mt-2 font-medium max-w-sm mx-auto drop-shadow-sm whitespace-pre-wrap">
+              <p className={`text-xs ${theme.bioColor} mt-2 font-medium max-w-sm mx-auto drop-shadow-sm whitespace-pre-wrap`}>
                 {profile.bio}
               </p>
             )}
@@ -177,18 +252,17 @@ export default async function UserProfilePage({ params }: PageProps) {
         </div>
 
         {/* 2. Redes Sociales horizontales */}
-        <div className="flex items-center justify-center gap-6 py-5 z-10 w-full bg-black">
+        <div className={`flex items-center justify-center gap-6 py-5 z-10 w-full ${theme.main}`}>
           {instagramLink && (
-            <a href={instagramLink} target="_blank" rel="noreferrer" className="text-white hover:opacity-85 transition-opacity p-2">
-              <HugeiconsIcon icon={InstagramIcon} className="text-white" size={26} />
+            <a href={instagramLink} target="_blank" rel="noreferrer" className={`${theme.text} hover:opacity-85 transition-opacity p-2`}>
+              <HugeiconsIcon icon={InstagramIcon} className={theme.text} size={26} />
             </a>
           )}
           {tiktokLink && (
-            <a href={tiktokLink} target="_blank" rel="noreferrer" className="text-white hover:opacity-85 transition-opacity p-2">
-              <HugeiconsIcon icon={TiktokIcon} className="text-white" size={26} />
+            <a href={tiktokLink} target="_blank" rel="noreferrer" className={`${theme.text} hover:opacity-85 transition-opacity p-2`}>
+              <HugeiconsIcon icon={TiktokIcon} className={theme.text} size={26} />
             </a>
           )}
-
         </div>
 
         {/* 3. Enlaces Activos */}
@@ -200,7 +274,7 @@ export default async function UserProfilePage({ params }: PageProps) {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-4 px-6 bg-white hover:bg-slate-100 text-black rounded-full flex items-center font-bold text-xs sm:text-sm tracking-wider uppercase transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-md border-none group relative cursor-pointer"
+                className={`w-full py-4 px-6 ${theme.link} rounded-full flex items-center font-bold text-xs sm:text-sm tracking-wider uppercase transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-md border-none group relative cursor-pointer`}
               >
                 <div className="absolute left-6 flex items-center justify-center w-5 h-5">
                   {getLinkIcon(link.url)}
@@ -218,8 +292,8 @@ export default async function UserProfilePage({ params }: PageProps) {
         </div>
 
         {/* Pie de Página */}
-        <footer className="mt-auto pt-4 text-center font-sans">
-          <img src="/logo.svg" alt="Logo tulink" className="w-16 h-16 mx-auto mt-2" />
+        <footer className={`mt-auto pt-4 text-center font-sans ${theme.footer}`}>
+          <img src="/logo.svg" alt="Logo tulink" className={`w-16 h-16 mx-auto mt-2 ${theme.text === 'text-black' ? '' : 'invert'}`} />
           <Link
             href="/"
             className="text-[10px] font-bold tracking-widest uppercase opacity-35 hover:opacity-80 transition-opacity duration-200"

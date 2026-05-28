@@ -24,7 +24,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               height={45}
               priority
               className="h-8 w-auto"
-            />
+            /> |  <span className=" text-slate-400 ml-2"> | By Nilspineda</span>
           </div>
 
           <div className="flex items-center gap-4">

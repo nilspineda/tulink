@@ -56,10 +56,15 @@ export default async function AdminPage({ searchParams }: PageProps) {
     )
   }
 
-  // 3. Obtener todas las cuentas registradas
+  // 3. Obtener todas las cuentas registradas con sus enlaces
   let queryBuilder = supabase
     .from('profiles')
-    .select('*')
+    .select(`
+      *,
+      links (
+        url
+      )
+    `)
     .order('created_at', { ascending: false })
 
   if (q.trim()) {
@@ -81,6 +86,19 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
   const profilesList = allProfiles || []
 
+  // Extraer WhatsApp de los enlaces
+  const getWhatsApp = (links: { url: string }[] | undefined) => {
+    if (!links || links.length === 0) return null
+    const waLink = links.find((l) => l.url.includes('wa.me') || l.url.includes('whatsapp.com'))
+    if (!waLink) return null
+    const match = waLink.url.match(/wa\.me\/(\d+)/)
+    if (match) {
+      const num = match[1]
+      return `+${num.substring(0, 2)} ${num.substring(2)}`
+    }
+    return waLink.url
+  }
+
   // Calcular métricas
   const totalUsers = profilesList.length
   const totalViews = profilesList.reduce((acc, curr) => acc + (curr.views || 0), 0)
@@ -100,7 +118,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 priority
                 className="h-8 w-auto"
               />
-            </Link>
+            </Link> 
+            
             <span className="text-xs bg-red-950/30 border border-red-900/50 text-red-400 font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
               Admin Panel
             </span>

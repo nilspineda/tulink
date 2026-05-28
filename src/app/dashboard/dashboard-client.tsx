@@ -128,10 +128,10 @@ export default function DashboardClient({
       </div>
 
       {/* Contenedor Dual: Editor y Previsualización */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
+      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
         {/* LADO IZQUIERDO: Editor (Columnas 3/5 en Desktop) */}
         <div
-          className={`md:col-span-3 space-y-6 ${
+          className={`md:col-span-3 space-y-6 overflow-y-auto max-h-[calc(100vh-14rem)] pr-2 ${
             showMobilePreview ? 'hidden md:block' : 'block'
           }`}
         >

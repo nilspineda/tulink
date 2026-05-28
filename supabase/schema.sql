@@ -13,6 +13,7 @@ create table if not exists public.profiles (
   theme_color text default 'default' not null,
   views integer default 0 not null,
   is_admin boolean default false not null,
+  marketing_consent boolean default false not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
 
   constraint username_length check (char_length(username) >= 3)
@@ -111,17 +112,18 @@ create policy "Los usuarios autenticados pueden borrar sus fotos"
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, username, full_name, email, avatar_url, theme_color)
+  insert into public.profiles (id, username, full_name, email, avatar_url, theme_color, marketing_consent)
   values (
     new.id,
     coalesce(
-      new.raw_user_meta_data->>'username', 
+      new.raw_user_meta_data->>'username',
       split_part(new.email, '@', 1) || '_' || substr(md5(random()::text), 1, 5)
     ),
     coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
     new.email,
     new.raw_user_meta_data->>'avatar_url',
-    'default'
+    'default',
+    coalesce((new.raw_user_meta_data->>'marketing_consent')::boolean, false)
   );
   return new;
 end;
