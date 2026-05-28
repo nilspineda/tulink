@@ -1,15 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
-import { 
-  Plus, Trash2, ArrowUp, ArrowDown, ExternalLink, 
-  Check, Loader2, Link2, AlertTriangle, Eye, EyeOff 
+import {
+  Plus, Trash2, ArrowUp, ArrowDown, ExternalLink,
+  Check, Loader2, Link2, AlertTriangle, Eye, EyeOff,
+  GripVertical
 } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverlay
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface LinkItem {
   id: string
@@ -32,6 +52,174 @@ const linkSchema = z.object({
 
 type LinkFormValues = z.infer<typeof linkSchema>
 
+interface SortableLinkProps {
+  link: LinkItem
+  index: number
+  editingId: string | null
+  editTitle: string
+  editUrl: string
+  links: LinkItem[]
+  onStartEditing: (link: LinkItem) => void
+  onSaveEdit: (id: string) => void
+  onDeleteLink: (id: string) => void
+  onToggleActive: (id: string, currentStatus: boolean) => void
+  onMove: (index: number, direction: 'up' | 'down') => void
+  onEditTitleChange: (value: string) => void
+  onEditUrlChange: (value: string) => void
+}
+
+function SortableLink({
+  link,
+  index,
+  editingId,
+  editTitle,
+  editUrl,
+  links,
+  onStartEditing,
+  onSaveEdit,
+  onDeleteLink,
+  onToggleActive,
+  onMove,
+  onEditTitleChange,
+  onEditUrlChange,
+}: SortableLinkProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: link.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 'auto',
+  }
+
+  const isEditing = editingId === link.id
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 flex gap-3 transition-all duration-200 ${
+        !link.active && 'opacity-65'
+      } ${isDragging ? 'shadow-2xl ring-2 ring-[#28af90]' : ''}`}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-500 hover:text-slate-300 transition-colors"
+      >
+        <GripVertical className="w-5 h-5" />
+      </div>
+
+      <div className="flex flex-col justify-center gap-1">
+        <button
+          onClick={() => onMove(index, 'up')}
+          disabled={index === 0}
+          className="p-1 hover:bg-slate-850 text-slate-400 disabled:opacity-20 hover:text-white rounded-md transition-colors cursor-pointer"
+          title="Subir"
+        >
+          <ArrowUp className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => onMove(index, 'down')}
+          disabled={index === links.length - 1}
+          className="p-1 hover:bg-slate-850 text-slate-400 disabled:opacity-20 hover:text-white rounded-md transition-colors cursor-pointer"
+          title="Bajar"
+        >
+          <ArrowDown className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="flex-1 min-w-0">
+        {isEditing ? (
+          <div className="space-y-2.5">
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => onEditTitleChange(e.target.value)}
+              placeholder="Título"
+              className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs outline-none focus:border-[#28af90]"
+            />
+            <input
+              type="text"
+              value={editUrl}
+              onChange={(e) => onEditUrlChange(e.target.value)}
+              placeholder="URL o Teléfono"
+              className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs outline-none focus:border-[#28af90]"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => onSaveEdit(link.id)}
+                className="bg-[#28af90] hover:bg-[#1e876e] text-white font-semibold text-[10px] py-1.5 px-3 rounded-md flex items-center gap-1 cursor-pointer"
+              >
+                <Check className="w-3 h-3" /> Guardar
+              </button>
+              <button
+                onClick={() => onStartEditing(null as any)}
+                className="bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold text-[10px] py-1.5 px-3 rounded-md cursor-pointer"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="h-full flex flex-col justify-between py-0.5">
+            <div>
+              <h4 className="font-bold text-white text-sm truncate">
+                {link.title}
+              </h4>
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-[#28af90] hover:underline flex items-center gap-1 mt-0.5 truncate max-w-max"
+              >
+                <span>{link.url}</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+              </a>
+            </div>
+            <div className="flex items-center gap-3 mt-3">
+              <button
+                onClick={() => onStartEditing(link)}
+                className="text-slate-400 hover:text-white text-xs transition-colors cursor-pointer"
+              >
+                Editar
+              </button>
+              <span className="text-slate-850">|</span>
+              <button
+                onClick={() => onDeleteLink(link.id)}
+                className="text-slate-400 hover:text-red-400 text-xs transition-colors cursor-pointer"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center self-start md:self-center">
+        <button
+          onClick={() => onToggleActive(link.id, link.active)}
+          className={`p-2 rounded-xl border transition-all duration-200 cursor-pointer ${
+            link.active
+              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
+              : 'bg-slate-800/60 border-slate-700 text-slate-550 hover:bg-slate-800 hover:text-slate-400'
+          }`}
+          title={link.active ? 'Desactivar enlace' : 'Activar enlace'}
+        >
+          {link.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function LinksManager({ userId, links, onLinksUpdate }: LinksManagerProps) {
   const supabase = createClient()
   const [isAdding, setIsAdding] = useState(false)
@@ -39,6 +227,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editUrl, setEditUrl] = useState('')
+  const [activeId, setActiveId] = useState<string | null>(null)
 
   const {
     register,
@@ -53,33 +242,35 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     },
   })
 
-  // Formateador de URL inteligente (Soporta URLs tradicionales y teléfonos de WhatsApp)
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
   const formatUrlInput = (inputUrl: string): string => {
     const trimmed = inputUrl.trim()
-    
-    // Si contiene solo números, espacios, guiones o signos de más
-    // y tiene longitud de un teléfono (8 a 15 dígitos)
     const digitsOnly = trimmed.replace(/[\s\-\+]/g, '')
     if (/^\d{8,15}$/.test(digitsOnly)) {
       return `https://wa.me/${digitsOnly}`
     }
-    
-    // Si no empieza con http:// o https://, agregarlo
     if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
       return `https://${trimmed}`
     }
-    
     return trimmed
   }
 
-  // Añadir un nuevo enlace
   const onAddLink = async (values: LinkFormValues) => {
     setIsLoading(true)
     try {
       const formattedUrl = formatUrlInput(values.url)
-      
-      const nextSortOrder = links.length > 0 
-        ? Math.max(...links.map(l => l.sort_order)) + 1 
+      const nextSortOrder = links.length > 0
+        ? Math.max(...links.map(l => l.sort_order)) + 1
         : 0
 
       const { data, error } = await supabase
@@ -107,10 +298,9 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     }
   }
 
-  // Guardar cambios al editar título/url
   const handleSaveEdit = async (id: string) => {
     if (!editTitle.trim() || !editUrl.trim()) return
-    
+
     try {
       const formattedUrl = formatUrlInput(editUrl)
 
@@ -133,7 +323,6 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     }
   }
 
-  // Eliminar un enlace
   const handleDeleteLink = async (id: string) => {
     try {
       const { error } = await supabase.from('links').delete().eq('id', id)
@@ -146,11 +335,9 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     }
   }
 
-  // Activar / Desactivar enlace
   const handleToggleActive = async (id: string, currentStatus: boolean) => {
     const nextStatus = !currentStatus
-    
-    // Optimización local instantánea
+
     onLinksUpdate(
       links.map((link) => (link.id === id ? { ...link, active: nextStatus } : link))
     )
@@ -162,7 +349,6 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
         .eq('id', id)
 
       if (error) {
-        // Revertir en caso de error
         onLinksUpdate(
           links.map((link) => (link.id === id ? { ...link, active: currentStatus } : link))
         )
@@ -173,33 +359,63 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     }
   }
 
-  // Reordenar Enlaces (Subir o Bajar)
   const handleMove = async (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1
     if (targetIndex < 0 || targetIndex >= links.length) return
 
     const newLinks = [...links]
-    
-    // Intercambiar posiciones en el array local
     const temp = newLinks[index]
     newLinks[index] = newLinks[targetIndex]
     newLinks[targetIndex] = temp
 
-    // Reasignar los valores de sort_order basados en el nuevo índice
     const updatedLinks = newLinks.map((link, idx) => ({
       ...link,
       sort_order: idx,
     }))
 
-    // Guardar estado local
     onLinksUpdate(updatedLinks)
 
     try {
-      // Guardar en la base de datos para ambos registros
       const updatePromises = updatedLinks.map((link) =>
         supabase.from('links').update({ sort_order: link.sort_order }).eq('id', link.id)
       )
-      
+
+      const results = await Promise.all(updatePromises)
+      const error = results.find((r) => r.error)
+      if (error) throw error.error
+    } catch (error: any) {
+      toast.error(`Error al guardar el orden: ${error.message}`)
+    }
+  }
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveId(null)
+
+    if (!over || active.id === over.id) return
+
+    const oldIndex = links.findIndex((l) => l.id === active.id)
+    const newIndex = links.findIndex((l) => l.id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const newLinks = arrayMove(links, oldIndex, newIndex)
+    const updatedLinks = newLinks.map((link, idx) => ({
+      ...link,
+      sort_order: idx,
+    }))
+
+    onLinksUpdate(updatedLinks)
+
+    try {
+      const updatePromises = updatedLinks.map((link) =>
+        supabase.from('links').update({ sort_order: link.sort_order }).eq('id', link.id)
+      )
+
       const results = await Promise.all(updatePromises)
       const error = results.find((r) => r.error)
       if (error) throw error.error
@@ -214,9 +430,10 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     setEditUrl(link.url)
   }
 
+  const activeLink = activeId ? links.find((l) => l.id === activeId) : null
+
   return (
     <div className="space-y-6">
-      {/* Encabezado e Interfaz para Añadir */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-white">Tus Enlaces</h3>
         <button
@@ -228,7 +445,6 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
         </button>
       </div>
 
-      {/* Formulario de Añadir Enlace */}
       {isAdding && (
         <form
           onSubmit={handleSubmit(onAddLink)}
@@ -290,133 +506,59 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
         </form>
       )}
 
-      {/* Lista de Enlaces */}
-      <div className="space-y-3.5">
-        {links.length > 0 ? (
-          links.map((link, idx) => {
-            const isEditing = editingId === link.id
-            return (
-              <div
-                key={link.id}
-                className={`bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 flex gap-4 transition-all duration-200 ${
-                  !link.active && 'opacity-65'
-                }`}
-              >
-                {/* Controles de Reordenación */}
-                <div className="flex flex-col justify-center gap-1.5">
-                  <button
-                    onClick={() => handleMove(idx, 'up')}
-                    disabled={idx === 0}
-                    className="p-1 hover:bg-slate-850 text-slate-400 disabled:opacity-20 hover:text-white rounded-md transition-colors cursor-pointer"
-                    title="Subir"
-                  >
-                    <ArrowUp className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleMove(idx, 'down')}
-                    disabled={idx === links.length - 1}
-                    className="p-1 hover:bg-slate-850 text-slate-400 disabled:opacity-20 hover:text-white rounded-md transition-colors cursor-pointer"
-                    title="Bajar"
-                  >
-                    <ArrowDown className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Contenido del Enlace */}
-                <div className="flex-1 min-w-0">
-                  {isEditing ? (
-                    <div className="space-y-2.5">
-                      <input
-                        type="text"
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        placeholder="Título"
-                        className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs outline-none focus:border-[#28af90]"
-                      />
-                      <input
-                        type="text"
-                        value={editUrl}
-                        onChange={(e) => setEditUrl(e.target.value)}
-                        placeholder="URL o Teléfono"
-                        className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs outline-none focus:border-[#28af90]"
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleSaveEdit(link.id)}
-                          className="bg-[#28af90] hover:bg-[#1e876e] text-white font-semibold text-[10px] py-1.5 px-3 rounded-md flex items-center gap-1 cursor-pointer"
-                        >
-                          <Check className="w-3 h-3" /> Guardar
-                        </button>
-                        <button
-                          onClick={() => setEditingId(null)}
-                          className="bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold text-[10px] py-1.5 px-3 rounded-md cursor-pointer"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="h-full flex flex-col justify-between py-0.5">
-                      <div>
-                        <h4 className="font-bold text-white text-sm truncate">
-                          {link.title}
-                        </h4>
-                        <a
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-[#28af90] hover:underline flex items-center gap-1 mt-0.5 truncate max-w-max"
-                        >
-                          <span>{link.url}</span>
-                          <ExternalLink className="w-3.5 h-3.5 opacity-60" />
-                        </a>
-                      </div>
-                      <div className="flex items-center gap-3 mt-3">
-                        <button
-                          onClick={() => startEditing(link)}
-                          className="text-slate-400 hover:text-white text-xs transition-colors cursor-pointer"
-                        >
-                          Editar
-                        </button>
-                        <span className="text-slate-850">|</span>
-                        <button
-                          onClick={() => handleDeleteLink(link.id)}
-                          className="text-slate-400 hover:text-red-400 text-xs transition-colors cursor-pointer"
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Switch de Activación */}
-                <div className="flex items-center self-start md:self-center">
-                  <button
-                    onClick={() => handleToggleActive(link.id, link.active)}
-                    className={`p-2 rounded-xl border transition-all duration-200 cursor-pointer ${
-                      link.active
-                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
-                        : 'bg-slate-800/60 border-slate-700 text-slate-550 hover:bg-slate-800 hover:text-slate-400'
-                    }`}
-                    title={link.active ? 'Desactivar enlace' : 'Activar enlace'}
-                  >
-                    {link.active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                  </button>
-                </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={links.map((l) => l.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-3.5">
+            {links.length > 0 ? (
+              links.map((link, idx) => (
+                <SortableLink
+                  key={link.id}
+                  link={link}
+                  index={idx}
+                  editingId={editingId}
+                  editTitle={editTitle}
+                  editUrl={editUrl}
+                  links={links}
+                  onStartEditing={startEditing}
+                  onSaveEdit={handleSaveEdit}
+                  onDeleteLink={handleDeleteLink}
+                  onToggleActive={handleToggleActive}
+                  onMove={handleMove}
+                  onEditTitleChange={setEditTitle}
+                  onEditUrlChange={setEditUrl}
+                />
+              ))
+            ) : (
+              <div className="border-2 border-dashed border-slate-800 rounded-2xl p-8 text-center text-slate-500 animate-fade-in">
+                <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-slate-600" />
+                <p className="text-sm font-semibold">No tienes enlaces registrados</p>
+                <p className="text-xs mt-1">
+                  Agrega tu primer enlace usando el botón superior "Añadir enlace".
+                </p>
               </div>
-            )
-          })
-        ) : (
-          <div className="border-2 border-dashed border-slate-800 rounded-2xl p-8 text-center text-slate-500 animate-fade-in">
-            <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-            <p className="text-sm font-semibold">No tienes enlaces registrados</p>
-            <p className="text-xs mt-1">
-              Agrega tu primer enlace usando el botón superior "Añadir enlace".
-            </p>
+            )}
           </div>
-        )}
-      </div>
+        </SortableContext>
+
+        <DragOverlay>
+          {activeLink ? (
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 flex gap-3 shadow-2xl ring-2 ring-[#28af90]">
+              <div className="flex items-center justify-center text-slate-400">
+                <GripVertical className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-white text-sm truncate">{activeLink.title}</h4>
+                <span className="text-xs text-[#28af90] truncate">{activeLink.url}</span>
+              </div>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   )
 }

@@ -258,6 +258,15 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </div>
         </section>
 
+        <footer className="mt-auto pt-8 pb-6 text-center text-xs text-slate-500 border-t border-slate-900">
+          <p>
+            Nilspineda (<a href="https://nilspineda.com" target="_blank" rel="noopener noreferrer" className="hover:underline text-slate-400">nilspineda.com</a>)
+          </p>
+          <p className="mt-1">
+            WhatsApp: <a href="https://wa.me/573167195500" target="_blank" rel="noopener noreferrer" className="hover:underline text-slate-400">+57 316 7195500</a>
+          </p>
+        </footer>
+
       </main>
     </div>
   )

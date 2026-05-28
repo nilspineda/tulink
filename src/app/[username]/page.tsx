@@ -219,13 +219,13 @@ export default async function UserProfilePage({ params }: PageProps) {
 
         {/* Pie de Página */}
         <footer className="mt-auto pt-4 text-center font-sans">
+          <img src="/logo.svg" alt="Logo tulink" className="w-16 h-16 mx-auto mt-2" />
           <Link
             href="/"
             className="text-[10px] font-bold tracking-widest uppercase opacity-35 hover:opacity-80 transition-opacity duration-200"
           >
-            ⚡ Creado con tulink by Nilspineda
+            ⚡ tulink by Nilspineda
           </Link>
-          <img src="/logo.svg" alt="" />
         </footer>
       </div>
     </main>
