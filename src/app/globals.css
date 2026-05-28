@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --primary: #28af90;
+  --primary-hover: #1e876e;
+  --brand: #28af90;
+  --brand-hover: #1e876e;
+  --font-sans: var(--font-dm-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Tema: Glassmorphic */
+[data-theme="glass"] {
+  --background: radial-gradient(circle at top, #112d24, #0b1a15, #040807);
+  --foreground: #f8fafc;
+  --card-bg: rgba(255, 255, 255, 0.08);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --primary: #28af90;
+  --primary-hover: #1e876e;
+}
+
+/* Tema: Sunset Minimalist */
+[data-theme="sunset"] {
+  --background: linear-gradient(135deg, #fffbeb, #fed7aa, #fdba74);
+  --foreground: #431407;
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --card-border: rgba(249, 115, 22, 0.2);
+  --primary: #ea580c;
+  --primary-hover: #c2410c;
+}
+
+/* Tema: Cyberpunk */
+[data-theme="cyberpunk"] {
+  --background: #0f051d;
+  --foreground: #00ff66;
+  --card-bg: #1a082e;
+  --card-border: #ff007f;
+  --primary: #ff007f;
+  --primary-hover: #d9006c;
+}
+
+/* Tema: Neo-Brutalism */
+[data-theme="neobrutalism"] {
+  --background: #fef08a;
+  --foreground: #000000;
+  --card-bg: #ffffff;
+  --card-border: #000000;
+  --primary: #000000;
+  --primary-hover: #1f2937;
+}
+
+/* Tema: Dark Bento */
+[data-theme="darkbento"] {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card-bg: #18181b;
+  --card-border: #27272a;
+  --primary: #28af90;
+  --primary-hover: #1e876e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --font-sans: var(--font-sans);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Efectos Premium */
+.glass-effect {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.neobrutalism-shadow {
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+.transition-all-custom {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scrollbar personalizado */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
