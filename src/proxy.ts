@@ -12,7 +12,7 @@ function getIp(request: NextRequest): string {
   if (xRealIp) {
     return xRealIp
   }
-  return request.ip || '127.0.0.1'
+  return '127.0.0.1'
 }
 
 export async function proxy(request: NextRequest) {
