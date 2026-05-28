@@ -200,9 +200,9 @@ export default async function AdminPage({ searchParams }: PageProps) {
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-950/50">
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Usuario</th>
+                  <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">WhatsApp</th>
+                  <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Nombre</th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Correo</th>
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Fecha Registro</th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Visitas</th>
                 </tr>
               </thead>
