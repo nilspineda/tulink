@@ -3,12 +3,12 @@
 import React, { useRef, useState, useEffect } from 'react'
 
 const partners = [
-  { name: 'Vercel', href: 'https://vercel.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/vercel.svg' },
-  { name: 'Supabase', href: 'https://supabase.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/supabase.svg' },
-  { name: 'Tailwind CSS', href: 'https://tailwindcss.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/tailwindcss.svg' },
-  { name: 'Stripe', href: 'https://stripe.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/stripe.svg' },
-  { name: 'Concepto Digital', href: 'https://conceptodigital.com.co', logo: 'https://conceptodigital.com.co/wp-content/uploads/2026/01/LOGO-2025-01-2048x949.png' },
-  { name: 'GitHub', href: 'https://github.com', logo: 'https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg' },
+  { name: 'Vercel', href: '#', logo: 'Próximamente' },
+  { name: 'Supabase', href: '#', logo: 'Próximamente' },
+  { name: 'Tailwind CSS', href: '#', logo: 'Próximamente' },
+  { name: 'Stripe', href: '#', logo: 'Próximamente' },
+  { name: 'Concepto Digital', href: '#', logo: 'Próximamente' },
+  { name: 'GitHub', href: '#', logo: 'Próximamente' },
 ]
 
 export default function PartnerCarousel() {
@@ -73,7 +73,9 @@ export default function PartnerCarousel() {
               rel="noopener noreferrer"
               className="flex-shrink-0 w-44 h-16 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center snap-center p-3 hover:bg-white/10 transition-colors"
             >
-              <img src={p.logo} alt={`${p.name} logo`} className="max-h-10 object-contain" />
+              <div className="flex h-10 w-full items-center justify-center rounded-lg border border-dashed border-slate-500/40 bg-slate-950/40 px-2 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+                {p.logo}
+              </div>
             </a>
           ))}
         </div>

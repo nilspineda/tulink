@@ -189,7 +189,7 @@ export default async function UserProfilePage({ params }: PageProps) {
 
       <div className="w-full max-w-md flex flex-col items-center relative z-10">
 
-        <div className="relative w-full h-[320px] sm:h-[360px] shrink-0 overflow-hidden rounded-2xl border border-white/10">
+        <div className="relative w-full aspect-[3/4] max-h-[400px] shrink-0 overflow-hidden rounded-2xl border border-white/10">
           {profile.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={profile.avatar_url} alt={profile.full_name || 'Imagen'} className="w-full h-full object-cover" />
@@ -213,7 +213,7 @@ export default async function UserProfilePage({ params }: PageProps) {
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-6 py-5 z-10 w-full bg-black/20">
+        <div className="flex items-center justify-center gap-6 py-6 z-10">
           {instagramLink && (
             <a href={instagramLink} target="_blank" rel="noreferrer" className={`${textColorClass} hover:opacity-85 transition-opacity p-2`}>
               <HugeiconsIcon icon={InstagramIcon} className={textColorClass} size={26} />
