@@ -81,8 +81,8 @@ export default function RegisterPage() {
       setTimeout(() => {
         router.push('/login?registered=true')
       }, 1500)
-    } catch (err: any) {
-      toast.error(err.message || 'Ocurrió un error inesperado al registrarte')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Ocurrió un error inesperado al registrarte')
       setIsLoading(false)
     }
   }

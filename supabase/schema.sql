@@ -14,7 +14,6 @@ create table if not exists public.profiles (
   background_color text default '#020617' not null,
   background_color_end text default '#020617' not null,
   background_url text,
-  desktop_layout text default 'vertical' not null,
   views integer default 0 not null,
   is_admin boolean default false not null,
   marketing_consent boolean default false not null,
@@ -140,7 +139,7 @@ create policy "Los usuarios autenticados pueden borrar sus fondos"
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, username, full_name, email, avatar_url, background_type, background_color, background_color_end, desktop_layout, marketing_consent)
+  insert into public.profiles (id, username, full_name, email, avatar_url, background_type, background_color, background_color_end, marketing_consent)
   values (
     new.id,
     coalesce(

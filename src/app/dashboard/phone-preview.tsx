@@ -25,7 +25,6 @@ interface ProfileData {
   background_color: string
   background_color_end: string
   background_url: string | null
-  desktop_layout: 'vertical' | 'bento'
 }
 
 interface PhonePreviewProps {

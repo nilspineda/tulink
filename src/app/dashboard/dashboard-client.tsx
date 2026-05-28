@@ -31,7 +31,6 @@ interface ProfileData {
   background_color: string
   background_color_end: string
   background_url: string | null
-  desktop_layout: 'vertical' | 'bento'
 }
 
 interface DashboardClientProps {
@@ -50,11 +49,7 @@ export default function DashboardClient({
   const [activeTab, setActiveTab] = useState<'links' | 'profile'>('links')
   const [showMobilePreview, setShowMobilePreview] = useState(false)
   const [showQRModal, setShowQRModal] = useState(false)
-  const [origin, setOrigin] = useState('')
-
-  useEffect(() => {
-    setOrigin(window.location.origin)
-  }, [])
+  const [origin] = useState(typeof window !== 'undefined' ? window.location.origin : '')
 
   // Cerrar Sesión
   const handleSignOut = async () => {

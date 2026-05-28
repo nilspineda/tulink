@@ -47,8 +47,8 @@ export default function ForgotPasswordPage() {
 
       toast.success('¡Enlace de recuperación enviado!')
       setIsSent(true)
-    } catch (err: any) {
-      toast.error(err.message || 'Error al enviar el enlace de recuperación')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al enviar el enlace de recuperación')
     } finally {
       setIsLoading(false)
     }

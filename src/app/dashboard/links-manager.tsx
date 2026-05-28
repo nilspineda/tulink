@@ -163,7 +163,7 @@ function SortableLink({
                 <Check className="w-3 h-3" /> Guardar
               </button>
               <button
-                onClick={() => onStartEditing(null as any)}
+                onClick={() => onStartEditing(null)}
                 className="bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold text-[10px] py-1.5 px-3 rounded-md cursor-pointer"
               >
                 Cancelar
@@ -303,8 +303,8 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
       reset()
       setIsAdding(false)
       toast.success('¡Enlace añadido con éxito!')
-    } catch (error: any) {
-      toast.error(`Error al añadir enlace: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error al añadir enlace: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsLoading(false)
     }
@@ -330,8 +330,8 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
       )
       setEditingId(null)
       toast.success('¡Enlace actualizado!')
-    } catch (error: any) {
-      toast.error(`Error al actualizar enlace: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error al actualizar enlace: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -342,8 +342,8 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
 
       onLinksUpdate(links.filter((link) => link.id !== id))
       toast.success('Enlace eliminado')
-    } catch (error: any) {
-      toast.error(`Error al eliminar enlace: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error al eliminar enlace: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -366,8 +366,8 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
         )
         throw error
       }
-    } catch (error: any) {
-      toast.error(`Error al cambiar estado del enlace: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error al cambiar estado del enlace: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -395,8 +395,8 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
       const results = await Promise.all(updatePromises)
       const error = results.find((r) => r.error)
       if (error) throw error.error
-    } catch (error: any) {
-      toast.error(`Error al guardar el orden: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error al guardar el orden: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -431,8 +431,8 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
       const results = await Promise.all(updatePromises)
       const error = results.find((r) => r.error)
       if (error) throw error.error
-    } catch (error: any) {
-      toast.error(`Error al guardar el orden: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error al guardar el orden: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -564,7 +564,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
                   <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-slate-600" />
                   <p className="text-sm font-semibold">No tienes enlaces registrados</p>
                   <p className="text-xs mt-1">
-                    Agrega tu primer enlace usando el botón superior "Añadir enlace".
+                    Agrega tu primer enlace usando el botón superior &quot;Añadir enlace&quot;.
                   </p>
                 </div>
               )}
@@ -615,7 +615,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
               <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-slate-600" />
               <p className="text-sm font-semibold">No tienes enlaces registrados</p>
               <p className="text-xs mt-1">
-                Agrega tu primer enlace usando el botón superior "Añadir enlace".
+                Agrega tu primer enlace usando el botón superior &quot;Añadir enlace&quot;.
               </p>
             </div>
           )}

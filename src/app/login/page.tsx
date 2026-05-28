@@ -66,8 +66,8 @@ function LoginForm() {
       toast.success('¡Inicio de sesión exitoso!')
       router.refresh()
       router.push('/dashboard')
-    } catch (err: any) {
-      toast.error(err.message || 'Error al iniciar sesión')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al iniciar sesión')
       setIsLoading(false)
     }
   }

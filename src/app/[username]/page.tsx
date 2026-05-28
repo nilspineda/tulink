@@ -4,9 +4,9 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  WhatsappIcon, YoutubeIcon, InstagramIcon, TiktokIcon,
+  YoutubeIcon, InstagramIcon, TiktokIcon,
   Facebook01Icon, LinkedinIcon, NewTwitterIcon, GithubIcon,
-  MailIcon, ShoppingBag01Icon, HandshakeIcon, GlobeIcon
+  MailIcon, ShoppingBag01Icon, HandshakeIcon, GlobeIcon, WhatsappIcon
 } from '@hugeicons/core-free-icons'
 import EditButton from '@/components/edit-button'
 
@@ -31,9 +31,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     .maybeSingle()
 
   if (!profile) {
-    return {
-      title: 'Perfil no encontrado | tulink',
-    }
+    return { title: 'Perfil no encontrado | tulink' }
   }
 
   const title = `${profile.full_name || `@${username}`} | Enlaces`
@@ -95,33 +93,21 @@ export default async function UserProfilePage({ params }: PageProps) {
   const getEmbedUrl = (url: string) => {
     if (url.includes('youtube.com/watch')) {
       const videoMatch = url.match(/youtube\.com\/watch\?.*v=([^&]+)/)
-      if (videoMatch) {
-        return `https://www.youtube.com/embed/${videoMatch[1]}`
-      }
+      if (videoMatch) return `https://www.youtube.com/embed/${videoMatch[1]}`
     }
     if (url.includes('youtu.be/')) {
       const shortMatch = url.match(/youtu\.be\/([^?]+)/)
-      if (shortMatch) {
-        return `https://www.youtube.com/embed/${shortMatch[1]}`
-      }
+      if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`
     }
-    if (url.includes('youtube.com/embed/')) {
-      return url.split('?')[0]
-    }
+    if (url.includes('youtube.com/embed/')) return url.split('?')[0]
     if (url.includes('youtube.com/@')) {
       const channelMatch = url.match(/youtube\.com\/@([^/?]+)/)
-      if (channelMatch) {
-        return `https://www.youtube.com/embed/${channelMatch[1]}`
-      }
+      if (channelMatch) return `https://www.youtube.com/embed/${channelMatch[1]}`
     }
     if (url.includes('vimeo.com/')) {
-      if (url.includes('player.vimeo.com')) {
-        return url.split('?')[0]
-      }
+      if (url.includes('player.vimeo.com')) return url.split('?')[0]
       const vimeoMatch = url.match(/vimeo\.com\/(\d+)/)
-      if (vimeoMatch) {
-        return `https://player.vimeo.com/video/${vimeoMatch[1]}`
-      }
+      if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`
     }
     return url
   }
@@ -139,7 +125,6 @@ export default async function UserProfilePage({ params }: PageProps) {
 
   const getLinkIcon = (url: string) => {
     const lowercaseUrl = url.toLowerCase()
-
     if (lowercaseUrl.includes('youtube.com') || lowercaseUrl.includes('youtu.be')) {
       return <HugeiconsIcon icon={YoutubeIcon} className="text-[#ff0000] shrink-0" size={18} />
     }
@@ -174,7 +159,6 @@ export default async function UserProfilePage({ params }: PageProps) {
     if (lowercaseUrl.startsWith('mailto:') || emailRegex.test(lowercaseUrl.split('?')[0].split('/').pop() || '')) {
       return <HugeiconsIcon icon={MailIcon} className="text-[#2563eb] shrink-0" size={18} />
     }
-
     return <HugeiconsIcon icon={GlobeIcon} className="text-slate-500 shrink-0" size={18} />
   }
 
@@ -196,39 +180,31 @@ export default async function UserProfilePage({ params }: PageProps) {
   }
 
   return (
-    <main className={`min-h-screen w-full flex flex-col items-center pb-12 transition-colors duration-300 relative select-none ${textColorClass}`} style={getBgStyle()}>
+    <main className={`min-h-screen w-full flex flex-col items-center pb-12 pt-12 transition-colors duration-300 relative select-none ${textColorClass}`} style={getBgStyle()}>
       {profile.background_type === 'image' && profile.background_url && (
         <div className="fixed inset-0 bg-black/75 z-0 pointer-events-none"></div>
       )}
 
-      {isOwner && (
-        <EditButton username={profile.username} />
-      )}
+      {isOwner && <EditButton username={profile.username} />}
 
       <div className="w-full max-w-md flex flex-col items-center relative z-10">
 
-        <div className="relative w-full h-[380px] sm:h-[420px] shrink-0 bg-slate-900/50 overflow-hidden">
+        <div className="relative w-full h-[320px] sm:h-[360px] shrink-0 overflow-hidden rounded-2xl border border-white/10">
           {profile.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profile.avatar_url}
-              alt={profile.full_name || 'Imagen'}
-              className="w-full h-full object-cover"
-            />
+            <img src={profile.avatar_url} alt={profile.full_name || 'Imagen'} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center">
               <span className="text-5xl font-black text-[#28af90]/20 tracking-widest">TULINK</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/35 to-black"></div>
-
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/5"></div>
           <div className="hidden sm:block w-full h-16"></div>
-
           <div className="absolute bottom-4 w-full text-center px-6 z-10">
             <h1 className={`font-extrabold text-2xl sm:text-3xl tracking-tight ${textColorClass} drop-shadow-md`}>
               {profile.full_name || `@${profile.username}`}
             </h1>
-
             {profile.bio && (
               <p className={`text-xs ${subtleTextClass} mt-2 font-medium max-w-sm mx-auto drop-shadow-sm whitespace-pre-wrap`}>
                 {profile.bio}
@@ -252,7 +228,7 @@ export default async function UserProfilePage({ params }: PageProps) {
 
         {videoLink && (
           <div className="w-full px-6 py-4 z-10">
-            <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-lg bg-black">
+            <div className="w-full max-w-md mx-auto aspect-video rounded-2xl overflow-hidden shadow-lg bg-black">
               <iframe
                 src={getEmbedUrl(videoLink.url)}
                 className="w-full h-full"
@@ -265,30 +241,28 @@ export default async function UserProfilePage({ params }: PageProps) {
           </div>
         )}
 
-        <div className="w-full px-6 flex flex-col gap-4 mb-16 z-10">
-          {normalLinks.length > 0 ? (
-            normalLinks.map((link) => (
+        {normalLinks.length === 0 ? (
+          <div className="w-full px-6 py-16 text-center opacity-40 bg-zinc-900/20 border border-zinc-800/30 rounded-3xl mb-16">
+            <p className="text-xs font-semibold">Este perfil aún no tiene enlaces públicos.</p>
+          </div>
+        ) : (
+          <div className="w-full px-6 flex flex-col gap-4 mb-16 z-10">
+            {normalLinks.map((link) => (
               <a
                 key={link.id}
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`w-full py-4 px-6 ${btnBgClass} ${btnTextClass} rounded-full flex items-center font-bold text-xs sm:text-sm tracking-wider uppercase transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-md border-none relative cursor-pointer`}
+                className={`w-full py-4 px-6 ${btnBgClass} ${btnTextClass} rounded-full flex items-center font-bold text-xs sm:text-sm tracking-wider uppercase transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-md relative cursor-pointer`}
               >
                 <div className="absolute left-6 flex items-center justify-center w-5 h-5">
                   {getLinkIcon(link.url)}
                 </div>
-                <span className="w-full text-center pr-2 pl-6 truncate">
-                  {link.title}
-                </span>
+                <span className="w-full text-center pr-2 pl-6 truncate">{link.title}</span>
               </a>
-            ))
-          ) : (
-            <div className="text-center py-16 opacity-40 bg-zinc-900/20 border border-zinc-800/30 rounded-3xl">
-              <p className="text-xs font-semibold">Este perfil aún no tiene enlaces públicos.</p>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
 
         <footer className={`mt-auto pt-4 pb-4 text-center font-sans ${subtleTextClass} flex items-center justify-center gap-2 text-xs`}>
           <span>Creado por:</span>

@@ -54,8 +54,8 @@ export default function ResetPasswordPage() {
 
       toast.success('¡Contraseña restablecida con éxito!')
       router.push('/login')
-    } catch (err: any) {
-      toast.error(err.message || 'Error al restablecer la contraseña')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al restablecer la contraseña')
       setIsLoading(false)
     }
   }

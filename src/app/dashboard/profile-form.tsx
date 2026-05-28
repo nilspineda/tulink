@@ -3,7 +3,7 @@
 import { useState, ChangeEvent } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Loader2, Upload, Trash2, Check, Palette, Image as ImageIcon, Share } from 'lucide-react'
+import { Loader2, Upload, Trash2, Palette, Image as ImageIcon, Share } from 'lucide-react'
 
 interface ProfileData {
   id: string
@@ -15,7 +15,6 @@ interface ProfileData {
   background_color: string
   background_color_end: string
   background_url: string | null
-  desktop_layout: 'vertical' | 'bento'
 }
 
 interface ProfileFormProps {
@@ -34,8 +33,6 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
   const [bgType, setBgType] = useState<'solid' | 'gradient' | 'image'>(profile.background_type || 'solid')
   const [bgColor, setBgColor] = useState(profile.background_color || '#020617')
   const [bgColorEnd, setBgColorEnd] = useState(profile.background_color_end || '#020617')
-
-  const [desktopLayout, setDesktopLayout] = useState<'vertical' | 'bento'>(profile.desktop_layout || 'vertical')
 
   const getLuminance = (hex: string) => {
     const rgb = hex.replace('#', '').match(/.{2}/g)?.map(x => parseInt(x, 16) / 255) || [0, 0, 0]
@@ -64,8 +61,8 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
 
       onProfileUpdate({ full_name: fullName, bio: bio })
       toast.success('Profile saved successfully!')
-    } catch (error: any) {
-      toast.error(`Error saving profile: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error saving profile: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsSaving(false)
     }
@@ -76,7 +73,7 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       const { error } = await supabase
         .from('profiles')
         .update({
- background_type: bgType,
+          background_type: bgType,
           background_color: bgColor,
           background_color_end: bgColorEnd,
         })
@@ -90,24 +87,8 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
         background_color_end: bgColorEnd,
       })
       toast.success('Background updated!')
-    } catch (error: any) {
-      toast.error(`Error saving background: ${error.message}`)
-    }
-  }
-
-  const handleSaveDesktopLayout = async () => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ desktop_layout: desktopLayout })
-        .eq('id', profile.id)
-
-      if (error) throw error
-
-      onProfileUpdate({ desktop_layout: desktopLayout })
-      toast.success('Desktop layout updated!')
-    } catch (error: any) {
-      toast.error(`Error saving layout: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error saving background: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -143,8 +124,8 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
 
       onProfileUpdate({ avatar_url: publicUrl })
       toast.success('Profile image uploaded!')
-    } catch (error: any) {
-      toast.error(`Error uploading image: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error uploading image: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsUploadingAvatar(false)
     }
@@ -164,8 +145,8 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
 
       onProfileUpdate({ avatar_url: null })
       toast.success('Profile image removed.')
-    } catch (error: any) {
-      toast.error(`Error removing image: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error removing image: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsUploadingAvatar(false)
     }
@@ -211,8 +192,8 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       setBgType('image')
       onProfileUpdate({ background_url: publicUrl, background_type: 'image' })
       toast.success('Profile background uploaded!')
-    } catch (error: any) {
-      toast.error(`Error uploading background: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error uploading background: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsUploadingBg(false)
     }
@@ -241,8 +222,8 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       setBgColorEnd('#020617')
       onProfileUpdate({ background_url: null, background_type: 'solid', background_color: '#020617', background_color_end: '#020617' })
       toast.success('Background removed.')
-    } catch (error: any) {
-      toast.error(`Error removing background: ${error.message}`)
+    } catch (error) {
+      toast.error(`Error removing background: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsUploadingBg(false)
     }
@@ -546,45 +527,6 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
             </button>
           </div>
         )}
-      </section>
-
-      <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <h3 className="text-lg font-bold text-white mb-2">Desktop Layout</h3>
-        <p className="text-xs text-slate-400 mb-5">
-          Choose how links appear on desktop
-        </p>
-
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            type="button"
-            onClick={() => setDesktopLayout('vertical')}
-            className={`p-5 rounded-xl border transition-all cursor-pointer relative ${
-              desktopLayout === 'vertical' ? 'border-[#28af90] bg-[#28af90]/10' : 'border-slate-700 bg-slate-950 hover:border-slate-600'
-            }`}
-          >
-            <span className="text-xs font-semibold text-white block text-center">Vertical</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setDesktopLayout('bento')}
-            className={`p-5 rounded-xl border transition-all cursor-pointer relative ${
-              desktopLayout === 'bento' ? 'border-[#28af90] bg-[#28af90]/10' : 'border-slate-700 bg-slate-950 hover:border-slate-600'
-            }`}
-          >
-            <span className="text-xs font-semibold text-white block text-center">Bento</span>
-          </button>
-        </div>
-
-        <div className="flex items-center justify-end pt-4 mt-4 border-t border-slate-800">
-          <button
-            type="button"
-            onClick={handleSaveDesktopLayout}
-            className="bg-[#28af90] hover:bg-[#1e876e] text-white font-semibold text-xs py-2.5 px-5 rounded-xl transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
-          >
-            <span>Save layout</span>
-          </button>
-        </div>
       </section>
     </div>
   )
