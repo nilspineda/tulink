@@ -42,7 +42,6 @@ export default async function DashboardPage() {
     <DashboardClient
       initialProfile={profile}
       initialLinks={links || []}
-      user={user}
     />
   )
 }

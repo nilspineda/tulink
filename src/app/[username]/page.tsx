@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -222,12 +223,12 @@ export default async function UserProfilePage({ params }: PageProps) {
 
         {/* Pie de Página */}
         <footer className="mt-auto pt-4 text-center font-sans">
-          <a
+          <Link
             href="/"
             className="text-[10px] font-bold tracking-widest uppercase opacity-35 hover:opacity-80 transition-opacity duration-200"
           >
             ⚡ Creado con tulink by Nilspineda
-          </a>
+          </Link>
         </footer>
       </div>
     </main>

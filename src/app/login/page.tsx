@@ -56,8 +56,8 @@ function LoginForm() {
       })
 
       if (error) {
-        throw new Error(error.message === 'Invalid login credentials' 
-          ? 'Credenciales incorrectas. Verifica tu correo y contraseña.' 
+        throw new Error(error.message === 'Invalid login credentials'
+          ? 'Credenciales incorrectas. Verifica tu correo y contraseña.'
           : error.message
         )
       }
@@ -72,14 +72,14 @@ function LoginForm() {
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl transition-all duration-300 hover:border-slate-800/80 w-full">
-      <h2 className="text-2xl font-bold text-white mb-6 text-center">
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl transition-all duration-300 hover:border-slate-800/80 w-full">
+      <h2 className="text-xl sm:text-2xl font-bold text-white mb-6 text-center">
         Iniciar Sesión
       </h2>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
-          <label className="block text-xs font-semibold text-slate-355 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-semibold text-slate-350 uppercase tracking-wider mb-2">
             Correo Electrónico
           </label>
           <div className="relative">
@@ -88,7 +88,7 @@ function LoginForm() {
               type="email"
               placeholder="tu@correo.com"
               {...register('email')}
-              className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-sm"
+              className="w-full pl-10 pr-4 py-3.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-base min-h-[48px]"
             />
           </div>
           {errors.email && (
@@ -97,7 +97,7 @@ function LoginForm() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-355 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-semibold text-slate-350 uppercase tracking-wider mb-2">
             Contraseña
           </label>
           <div className="relative">
@@ -106,7 +106,7 @@ function LoginForm() {
               type="password"
               placeholder="••••••••"
               {...register('password')}
-              className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-sm"
+              className="w-full pl-10 pr-4 py-3.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-base min-h-[48px]"
             />
           </div>
           {errors.password && (
@@ -117,7 +117,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 bg-[#28af90] hover:bg-[#1e876e] disabled:bg-[#28af90]/50 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-[#28af90]/25 active:scale-[0.98] cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 bg-[#28af90] hover:bg-[#1e876e] disabled:bg-[#28af90]/50 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-[#28af90]/25 active:scale-[0.98] cursor-pointer min-h-[52px] text-base"
         >
           {isLoading ? (
             <>
@@ -134,7 +134,7 @@ function LoginForm() {
       </form>
 
       <div className="mt-8 pt-6 border-t border-slate-850 text-center">
-        <p className="text-slate-400 text-sm">
+        <p className="text-slate-400 text-sm sm:text-base">
           ¿No tienes una cuenta?{' '}
           <Link
             href="/register"
@@ -150,11 +150,10 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 p-4">
-      <div className="w-full max-w-md my-8">
-        {/* Logo / Título */}
+    <main className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 px-4 py-8">
+      <div className="w-full max-w-md my-4">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold tracking-tight text-white flex items-baseline justify-center gap-1">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white flex items-baseline justify-center gap-1">
             <span className="text-[#28af90]">tu</span>link
             <span className="text-[10px] text-slate-400 font-normal ml-1">by Nilspineda</span>
           </h1>
@@ -172,8 +171,7 @@ export default function LoginPage() {
         </Suspense>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-auto py-6 text-center text-xs text-slate-500 border-t border-slate-900 w-full max-w-md">
+      <footer className="mt-auto py-6 text-center text-xs text-slate-500 border-t border-slate-900 w-full max-w-md px-4">
         <p>
           Nilspineda (<a href="https://nilspineda.com" target="_blank" rel="noopener noreferrer" className="hover:underline text-slate-400">nilspineda.com</a>)
         </p>

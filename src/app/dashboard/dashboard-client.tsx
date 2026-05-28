@@ -6,9 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 import ProfileForm from './profile-form'
 import LinksManager from './links-manager'
 import PhonePreview from './phone-preview'
+import QRModal from '@/components/qr-modal'
 import { 
-  LogOut, Link2, User, Eye, ArrowLeft, 
-  Smartphone, Edit3, ExternalLink 
+  LogOut, Link2, User as UserIcon, ArrowLeft, 
+  Smartphone, Edit3, ExternalLink, QrCode 
 } from 'lucide-react'
 
 interface LinkItem {
@@ -31,13 +32,11 @@ interface ProfileData {
 interface DashboardClientProps {
   initialProfile: ProfileData
   initialLinks: LinkItem[]
-  user: any
 }
 
 export default function DashboardClient({
   initialProfile,
   initialLinks,
-  user,
 }: DashboardClientProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -45,6 +44,7 @@ export default function DashboardClient({
   const [links, setLinks] = useState<LinkItem[]>(initialLinks)
   const [activeTab, setActiveTab] = useState<'links' | 'profile'>('links')
   const [showMobilePreview, setShowMobilePreview] = useState(false)
+  const [showQRModal, setShowQRModal] = useState(false)
   const [origin, setOrigin] = useState('')
 
   useEffect(() => {
@@ -88,6 +88,13 @@ export default function DashboardClient({
               <span>{origin ? origin.replace(/^https?:\/\//, '') : 'tulink.dev'}/{profile.username}</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
+            <button
+              onClick={() => setShowQRModal(true)}
+              className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[#28af90] text-xs font-semibold px-3 py-1.5 rounded-lg transition-all cursor-pointer ml-2"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span>QR</span>
+            </button>
           </div>
         </div>
 
@@ -149,7 +156,7 @@ export default function DashboardClient({
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <User className="w-4 h-4" />
+              <UserIcon className="w-4 h-4" />
               <span>Perfil y Temas</span>
             </button>
           </div>
@@ -187,6 +194,13 @@ export default function DashboardClient({
           <PhonePreview profile={profile} links={links} />
         </div>
       </div>
+
+      <QRModal
+        username={profile.username}
+        origin={origin || 'https://tulink.dev'}
+        isOpen={showQRModal}
+        onClose={() => setShowQRModal(false)}
+      />
     </div>
   )
 }

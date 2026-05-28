@@ -48,7 +48,6 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      // 1. Verificar si el username ya está en uso en profiles
       const { data: profileCheck, error: checkError } = await supabase
         .from('profiles')
         .select('username')
@@ -63,8 +62,7 @@ export default function RegisterPage() {
         throw new Error('El nombre de usuario ya está registrado')
       }
 
-      // 2. Ejecutar registro de Supabase Auth
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
@@ -78,7 +76,7 @@ export default function RegisterPage() {
       if (error) throw error
 
       toast.success('¡Registro exitoso! Por favor inicia sesión con tus credenciales.')
-      
+
       setTimeout(() => {
         router.push('/login?registered=true')
       }, 1500)
@@ -89,11 +87,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 p-4">
-      <div className="w-full max-w-md my-8">
-        {/* Logo / Título */}
+    <main className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 px-4 py-8">
+      <div className="w-full max-w-md my-4">
         <div className="text-center mb-6">
-          <h1 className="text-4xl font-extrabold tracking-tight text-white flex items-baseline justify-center gap-1">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white flex items-baseline justify-center gap-1">
             <span className="text-[#28af90]">tu</span>link
             <span className="text-[10px] text-slate-400 font-normal ml-1">by Nilspineda</span>
           </h1>
@@ -102,9 +99,8 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Tarjeta Glassmorphic */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl">
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-6 text-center">
             Crear Cuenta
           </h2>
 
@@ -119,7 +115,7 @@ export default function RegisterPage() {
                   type="text"
                   placeholder="mi_usuario"
                   {...register('username')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-650 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-sm"
+                  className="w-full pl-10 pr-4 py-3.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-650 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-base min-h-[48px]"
                 />
               </div>
               {errors.username && (
@@ -137,7 +133,7 @@ export default function RegisterPage() {
                   type="text"
                   placeholder="Juan Pérez"
                   {...register('fullName')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-650 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-sm"
+                  className="w-full pl-10 pr-4 py-3.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-650 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-base min-h-[48px]"
                 />
               </div>
               {errors.fullName && (
@@ -155,7 +151,7 @@ export default function RegisterPage() {
                   type="email"
                   placeholder="tu@correo.com"
                   {...register('email')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-650 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-sm"
+                  className="w-full pl-10 pr-4 py-3.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-650 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-base min-h-[48px]"
                 />
               </div>
               {errors.email && (
@@ -173,7 +169,7 @@ export default function RegisterPage() {
                   type="password"
                   placeholder="••••••••"
                   {...register('password')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-650 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-sm"
+                  className="w-full pl-10 pr-4 py-3.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-650 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-base min-h-[48px]"
                 />
               </div>
               {errors.password && (
@@ -184,7 +180,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-[#28af90] hover:bg-[#1e876e] disabled:bg-[#28af90]/50 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-[#28af90]/25 active:scale-[0.98] mt-2 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 bg-[#28af90] hover:bg-[#1e876e] disabled:bg-[#28af90]/50 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-[#28af90]/25 active:scale-[0.98] mt-2 cursor-pointer min-h-[52px] text-base"
             >
               {isLoading ? (
                 <>
@@ -201,7 +197,7 @@ export default function RegisterPage() {
           </form>
 
           <div className="mt-8 pt-6 border-t border-slate-800 text-center">
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-400 text-sm sm:text-base">
               ¿Ya tienes una cuenta?{' '}
               <Link
                 href="/login"
@@ -214,8 +210,7 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-auto py-6 text-center text-xs text-slate-500 border-t border-slate-900 w-full max-w-md">
+      <footer className="mt-auto py-6 text-center text-xs text-slate-500 border-t border-slate-900 w-full max-w-md px-4">
         <p>
           Nilspineda (<a href="https://nilspineda.com" target="_blank" rel="noopener noreferrer" className="hover:underline text-slate-400">nilspineda.com</a>)
         </p>
