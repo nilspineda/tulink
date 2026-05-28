@@ -7,9 +7,12 @@ create table if not exists public.profiles (
   id uuid references auth.users on delete cascade primary key,
   username text unique not null,
   full_name text,
+  email text,
   bio text,
   avatar_url text,
   theme_color text default 'default' not null,
+  views integer default 0 not null,
+  is_admin boolean default false not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
 
   constraint username_length check (char_length(username) >= 3)
@@ -108,7 +111,7 @@ create policy "Los usuarios autenticados pueden borrar sus fotos"
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, username, full_name, avatar_url, theme_color)
+  insert into public.profiles (id, username, full_name, email, avatar_url, theme_color)
   values (
     new.id,
     coalesce(
@@ -116,6 +119,7 @@ begin
       split_part(new.email, '@', 1) || '_' || substr(md5(random()::text), 1, 5)
     ),
     coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    new.email,
     new.raw_user_meta_data->>'avatar_url',
     'default'
   );
@@ -128,3 +132,14 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+
+-- 5. Función para incrementar vistas de perfiles (RPC)
+create or replace function public.increment_profile_views(profile_id uuid)
+returns void as $$
+begin
+  update public.profiles
+  set views = views + 1
+  where id = profile_id;
+end;
+$$ language plpgsql security definer;

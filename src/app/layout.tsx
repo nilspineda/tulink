@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { DM_Sans } from 'next/font/google'
 import { Toaster } from 'sonner'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/logo.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: 'any' }
+      { url: '/favicon.jpg', sizes: 'any' }
     ],
     apple: '/logo.svg',
   },
@@ -74,12 +75,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID
+
   return (
     <html lang="es" className={`${dmSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans">
+        <script dangerouslySetInnerHTML={{ __html: "(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-MNHKB37P');" }} />
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MNHKB37P" height="0" width="0" style="display:none;visibility:hidden"} /></noscript>
         {children}
         <Toaster position="top-right" richColors closeButton />
       </body>
+      {gaId && <GoogleAnalytics gaId={gaId} />}
     </html>
   )
 }

@@ -68,6 +68,11 @@ export default async function UserProfilePage({ params }: PageProps) {
     notFound()
   }
 
+  // Incrementar visitas en segundo plano
+  supabase.rpc('increment_profile_views', { profile_id: profile.id }).then(({ error }) => {
+    if (error) console.error('Error al incrementar vistas:', error)
+  })
+
   // Obtener Enlaces Activos
   const { data: links } = await supabase
     .from('links')
@@ -80,7 +85,6 @@ export default async function UserProfilePage({ params }: PageProps) {
   const activeLinks = links || []
   const instagramLink = activeLinks.find((l) => l.url.includes('instagram.com'))?.url
   const tiktokLink = activeLinks.find((l) => l.url.includes('tiktok.com'))?.url
-  const emailLink = activeLinks.find((l) => l.url.includes('mailto:') || l.url.includes('@'))?.url
 
   // Mapear iconos de links de forma coherente con Hugeicons
   const getLinkIcon = (url: string) => {
@@ -135,12 +139,7 @@ export default async function UserProfilePage({ params }: PageProps) {
     return <HugeiconsIcon icon={GlobeIcon} className="text-slate-500 shrink-0" size={18} />
   }
 
-  const getEmailHref = (href: string) => {
-    if (href.includes('@') && !href.startsWith('mailto:')) {
-      return `mailto:${href}`
-    }
-    return href
-  }
+
 
   return (
     <main className="min-h-screen w-full bg-black text-white flex flex-col items-center pb-12 transition-colors duration-300 relative select-none">
@@ -188,11 +187,7 @@ export default async function UserProfilePage({ params }: PageProps) {
               <HugeiconsIcon icon={TiktokIcon} className="text-white" size={26} />
             </a>
           )}
-          {emailLink && (
-            <a href={getEmailHref(emailLink)} className="text-white hover:opacity-85 transition-opacity p-2">
-              <HugeiconsIcon icon={MailIcon} className="text-white" size={26} />
-            </a>
-          )}
+
         </div>
 
         {/* 3. Enlaces Activos */}
