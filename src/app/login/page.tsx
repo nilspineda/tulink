@@ -9,6 +9,7 @@ import * as z from 'zod'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { KeyRound, Mail, Loader2, ArrowRight } from 'lucide-react'
+import Image from 'next/image'
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Ingresa un correo electrónico válido' }),
@@ -79,7 +80,7 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div>
-          <label className="block text-xs font-semibold text-slate-350 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
             Correo Electrónico
           </label>
           <div className="relative">
@@ -98,7 +99,7 @@ function LoginForm() {
 
         <div>
           <div className="flex justify-between items-center mb-2">
-            <label className="block text-xs font-semibold text-slate-350 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Contraseña
             </label>
             <Link
@@ -141,7 +142,7 @@ function LoginForm() {
         </button>
       </form>
 
-      <div className="mt-8 pt-6 border-t border-slate-850 text-center">
+      <div className="mt-8 pt-6 border-t border-slate-800 text-center">
         <p className="text-slate-400 text-sm sm:text-base">
           ¿No tienes una cuenta?{' '}
           <Link
@@ -161,10 +162,16 @@ export default function LoginPage() {
     <main className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 px-4 py-8">
       <div className="w-full max-w-md my-4">
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white flex items-baseline justify-center gap-1">
-            <span className="text-[#28af90]">tu</span>link
-            <span className="text-[10px] text-slate-400 font-normal ml-1">by Nilspineda</span>
-          </h1>
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/logo.svg"
+              alt="tulink logo"
+              width={180}
+              height={60}
+              priority
+              className="h-10 w-auto"
+            />
+          </div>
           <p className="text-slate-400 mt-2 text-sm">
             Administra tu marca personal en un solo enlace
           </p>

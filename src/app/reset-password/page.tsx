@@ -9,6 +9,7 @@ import * as z from 'zod'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { KeyRound, Loader2, ArrowRight, ArrowLeft } from 'lucide-react'
+import Image from 'next/image'
 
 const resetPasswordSchema = z
   .object({
@@ -63,10 +64,16 @@ export default function ResetPasswordPage() {
     <main className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 px-4 py-8">
       <div className="w-full max-w-md my-4">
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white flex items-baseline justify-center gap-1">
-            <span className="text-[#28af90]">tu</span>link
-            <span className="text-[10px] text-slate-400 font-normal ml-1">by Nilspineda</span>
-          </h1>
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/logo.svg"
+              alt="tulink logo"
+              width={180}
+              height={60}
+              priority
+              className="h-10 w-auto"
+            />
+          </div>
           <p className="text-slate-400 mt-2 text-sm">
             Restablece la contraseña de tu cuenta
           </p>
@@ -79,7 +86,7 @@ export default function ResetPasswordPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="block text-xs font-semibold text-slate-350 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                 Nueva Contraseña
               </label>
               <div className="relative">
@@ -97,7 +104,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-350 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                 Confirmar Contraseña
               </label>
               <div className="relative">

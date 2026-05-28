@@ -8,6 +8,7 @@ import * as z from 'zod'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Mail, Loader2, ArrowRight, ArrowLeft } from 'lucide-react'
+import Image from 'next/image'
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: 'Ingresa un correo electrónico válido' }),
@@ -57,10 +58,16 @@ export default function ForgotPasswordPage() {
     <main className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 px-4 py-8">
       <div className="w-full max-w-md my-4">
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white flex items-baseline justify-center gap-1">
-            <span className="text-[#28af90]">tu</span>link
-            <span className="text-[10px] text-slate-400 font-normal ml-1">by Nilspineda</span>
-          </h1>
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/logo.svg"
+              alt="tulink logo"
+              width={180}
+              height={60}
+              priority
+              className="h-10 w-auto"
+            />
+          </div>
           <p className="text-slate-400 mt-2 text-sm">
             Recupera el acceso a tu cuenta
           </p>
@@ -76,7 +83,7 @@ export default function ForgotPasswordPage() {
               <div className="mx-auto w-12 h-12 rounded-full bg-[#28af90]/10 flex items-center justify-center text-[#28af90]">
                 <Mail className="w-6 h-6" />
               </div>
-              <p className="text-slate-350 text-sm sm:text-base leading-relaxed">
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
                 Hemos enviado un correo electrónico con instrucciones para restablecer tu contraseña. Revisa tu bandeja de entrada o carpeta de spam.
               </p>
               <div className="pt-4">
@@ -95,7 +102,7 @@ export default function ForgotPasswordPage() {
                 Ingresa tu dirección de correo electrónico y te enviaremos un enlace seguro para restablecer tu contraseña.
               </p>
               <div>
-                <label className="block text-xs font-semibold text-slate-350 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                   Correo Electrónico
                 </label>
                 <div className="relative">

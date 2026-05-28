@@ -85,7 +85,7 @@ export default async function UserProfilePage({ params }: PageProps) {
   // Mapear iconos de links de forma coherente con Hugeicons
   const getLinkIcon = (url: string) => {
     const lowercaseUrl = url.toLowerCase()
-    
+
     // 1. YouTube
     if (lowercaseUrl.includes('youtube.com') || lowercaseUrl.includes('youtu.be')) {
       return <HugeiconsIcon icon={YoutubeIcon} className="text-[#ff0000] shrink-0" size={18} />
@@ -130,7 +130,7 @@ export default async function UserProfilePage({ params }: PageProps) {
     if (lowercaseUrl.includes('mailto:') || lowercaseUrl.includes('@')) {
       return <HugeiconsIcon icon={MailIcon} className="text-[#2563eb] shrink-0" size={18} />
     }
-    
+
     // Default
     return <HugeiconsIcon icon={GlobeIcon} className="text-slate-500 shrink-0" size={18} />
   }
@@ -145,7 +145,7 @@ export default async function UserProfilePage({ params }: PageProps) {
   return (
     <main className="min-h-screen w-full bg-black text-white flex flex-col items-center pb-12 transition-colors duration-300 relative select-none">
       <div className="w-full max-w-md flex flex-col items-center">
-        
+
         {/* 1. Header con Imagen Principal */}
         <div className="relative w-full h-[380px] shrink-0 bg-slate-900 overflow-hidden">
           {profile.avatar_url ? (
@@ -167,7 +167,7 @@ export default async function UserProfilePage({ params }: PageProps) {
             <h1 className="font-extrabold text-2xl sm:text-3xl tracking-tight text-white drop-shadow-md">
               {profile.full_name || `@${profile.username}`}
             </h1>
-            
+
             {profile.bio && (
               <p className="text-xs text-slate-300 mt-2 font-medium max-w-sm mx-auto drop-shadow-sm whitespace-pre-wrap">
                 {profile.bio}
@@ -229,6 +229,7 @@ export default async function UserProfilePage({ params }: PageProps) {
           >
             ⚡ Creado con tulink by Nilspineda
           </Link>
+          <img src="/logo.svg" alt="" />
         </footer>
       </div>
     </main>
