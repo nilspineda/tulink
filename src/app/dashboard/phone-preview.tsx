@@ -81,7 +81,8 @@ export default function PhonePreview({ profile, links }: PhonePreviewProps) {
       return <HugeiconsIcon icon={HandshakeIcon} className="text-[#c2410c] shrink-0" size={18} />
     }
     // 11. Correo
-    if (lowercaseUrl.includes('mailto:') || lowercaseUrl.includes('@')) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (lowercaseUrl.startsWith('mailto:') || emailRegex.test(lowercaseUrl.split('?')[0].split('/').pop() || '')) {
       return <HugeiconsIcon icon={MailIcon} className="text-[#2563eb] shrink-0" size={18} />
     }
     
