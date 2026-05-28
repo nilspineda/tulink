@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Smartphone, Shield, Sparkles, Link2, QrCode, Infinity, Video } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
 import PartnerCarousel from '../components/partner-carousel'
 
 export const metadata = {
@@ -8,7 +9,28 @@ export const metadata = {
   description: 'Crea tu página de enlaces personalizada en segundos. Comparte tus perfiles sociales, portafolios y proyectos con un diseño elegante y responsive.',
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let username = ''
+  let fullName: string | null = null
+  let avatarUrl: string | null = null
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username, full_name, avatar_url')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (profile) {
+      username = profile.username
+      fullName = profile.full_name
+      avatarUrl = profile.avatar_url
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Luces de Fondo (Gradientes) - ocultos en móvil */}
@@ -30,18 +52,48 @@ export default function LandingPage() {
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <Link
-              href="/login"
-              className="text-xs font-bold text-slate-350 hover:text-white transition-colors py-2 px-3 sm:py-2.5 sm:px-3.5"
-            >
-              Iniciar Sesión
-            </Link>
-            <Link
-              href="/register"
-              className="bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md active:scale-95 min-h-[44px] flex items-center"
-            >
-              Comenzar Gratis
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  href={`/${username}`}
+                  target="_blank"
+                  className="flex items-center gap-2 bg-slate-800/50 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 text-slate-200 font-semibold text-xs py-2 px-3 rounded-xl transition-all cursor-pointer"
+                >
+                  <div className="w-6 h-6 rounded-full bg-[#28af90] flex items-center justify-center overflow-hidden">
+                    {avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={avatarUrl} alt={fullName || username} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[10px] font-bold text-white">
+                        {fullName?.[0]?.toUpperCase() || username[0]?.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="hidden sm:inline">{fullName || username}</span>
+                </Link>
+                <Link
+                  href="/dashboard"
+                  className="bg-[#28af90] hover:bg-[#1e876e] text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md active:scale-95 min-h-[44px] flex items-center"
+                >
+                  Dashboard
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-xs font-bold text-slate-350 hover:text-white transition-colors py-2 px-3 sm:py-2.5 sm:px-3.5"
+                >
+                  Iniciar Sesión
+                </Link>
+                <Link
+                  href="/register"
+                  className="bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md active:scale-95 min-h-[44px] flex items-center"
+                >
+                  Comenzar Gratis
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -65,19 +117,31 @@ export default function LandingPage() {
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0">
-          <Link
-            href="/register"
-            className="flex items-center justify-center gap-2 bg-[#28af90] hover:bg-[#1e876e] text-white font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-200 shadow-lg shadow-[#28af90]/30 active:scale-98 cursor-pointer min-h-[52px] w-full sm:w-auto"
-          >
-            <span className="text-sm sm:text-base">Crear mi tulink</span>
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-          <Link
-            href="/login"
-            className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-200 min-h-[52px] w-full sm:w-auto"
-          >
-            <span className="text-sm sm:text-base">Administrar mi cuenta</span>
-          </Link>
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="flex items-center justify-center gap-2 bg-[#28af90] hover:bg-[#1e876e] text-white font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-200 shadow-lg shadow-[#28af90]/30 active:scale-98 cursor-pointer min-h-[52px] w-full sm:w-auto"
+            >
+              <span className="text-sm sm:text-base">Administrar mi tulink</span>
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/register"
+                className="flex items-center justify-center gap-2 bg-[#28af90] hover:bg-[#1e876e] text-white font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-200 shadow-lg shadow-[#28af90]/30 active:scale-98 cursor-pointer min-h-[52px] w-full sm:w-auto"
+              >
+                <span className="text-sm sm:text-base">Crear mi tulink</span>
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/login"
+                className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-bold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-200 min-h-[52px] w-full sm:w-auto"
+              >
+                <span className="text-sm sm:text-base">Administrar mi cuenta</span>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Feature Highlights */}
@@ -159,13 +223,13 @@ export default function LandingPage() {
           <h3 className="text-sm text-slate-400 uppercase tracking-wider mb-4">Colaboradores Destacados</h3>
           <div className="flex items-center justify-center gap-8">
             <a href="https://nilspineda.com" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity duration-200"> <img src="nilspineda.svg"  alt="nilspineda.com" className="h-12 sm:h-8" />
-             
-            </a>
-            
+
+           </a>
+
           </div>
         </div>
-        
-     
+
+
         <PartnerCarousel />
       </section>
       {/* Footer */}

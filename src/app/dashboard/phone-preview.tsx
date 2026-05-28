@@ -11,6 +11,7 @@ interface LinkItem {
   id: string
   title: string
   url: string
+  embed_type: string
   active: boolean
   sort_order: number
 }
@@ -20,7 +21,11 @@ interface ProfileData {
   full_name: string | null
   bio: string | null
   avatar_url: string | null
-  theme_color: string
+  background_type: 'solid' | 'gradient' | 'image'
+  background_color: string
+  background_color_end: string
+  background_url: string | null
+  desktop_layout: 'vertical' | 'bento'
 }
 
 interface PhonePreviewProps {
@@ -31,6 +36,42 @@ interface PhonePreviewProps {
 export default function PhonePreview({ profile, links }: PhonePreviewProps) {
   const activeLinks = links.filter((link) => link.active)
 
+  // Luminance helper for contrast calculation
+  const getLuminance = (hex: string) => {
+    const rgb = hex.replace('#', '').match(/.{2}/g)?.map(x => parseInt(x, 16) / 255) || [0, 0, 0]
+    const [r, g, b] = rgb
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+
+  // Calculate contrast colors
+  const bgLuminance = profile.background_type === 'gradient'
+    ? getLuminance(profile.background_color_end)
+    : getLuminance(profile.background_color)
+
+  const textColorClass = bgLuminance > 0.5 ? 'text-slate-900' : 'text-white'
+  const btnBgClass = bgLuminance > 0.5 ? 'bg-slate-900 hover:bg-slate-800' : 'bg-white hover:bg-slate-100'
+  const btnTextClass = bgLuminance > 0.5 ? 'text-white' : 'text-slate-900'
+  const subtleTextClass = bgLuminance > 0.5 ? 'text-slate-600' : 'text-slate-400'
+  const footerTextClass = bgLuminance > 0.5 ? 'text-slate-500' : 'text-slate-500'
+
+  // Get background style
+  const getBgStyle = () => {
+    if (profile.background_type === 'solid') {
+      return { backgroundColor: profile.background_color }
+    }
+    if (profile.background_type === 'gradient') {
+      return { background: `linear-gradient(to bottom, ${profile.background_color}, ${profile.background_color_end})` }
+    }
+    if (profile.background_type === 'image' && profile.background_url) {
+      return {
+        backgroundImage: `url(${profile.background_url})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }
+    }
+    return { backgroundColor: '#020617' }
+  }
+
   // Extraer redes sociales para la sección superior
   const instagramLink = links.find((l) => l.url.includes('instagram.com') && l.active)?.url
   const tiktokLink = links.find((l) => l.url.includes('tiktok.com') && l.active)?.url
@@ -39,7 +80,7 @@ export default function PhonePreview({ profile, links }: PhonePreviewProps) {
   // Mapear iconos para la lista de enlaces de forma coherente con Hugeicons
   const getLinkIcon = (url: string) => {
     const lowercaseUrl = url.toLowerCase()
-    
+
     // 1. YouTube
     if (lowercaseUrl.includes('youtube.com') || lowercaseUrl.includes('youtu.be')) {
       return <HugeiconsIcon icon={YoutubeIcon} className="text-[#ff0000] shrink-0" size={18} />
@@ -85,9 +126,9 @@ export default function PhonePreview({ profile, links }: PhonePreviewProps) {
     if (lowercaseUrl.startsWith('mailto:') || emailRegex.test(lowercaseUrl.split('?')[0].split('/').pop() || '')) {
       return <HugeiconsIcon icon={MailIcon} className="text-[#2563eb] shrink-0" size={18} />
     }
-    
+
     // Default
-    return <HugeiconsIcon icon={GlobeIcon} className="text-slate-500 shrink-0" size={18} />
+    return <HugeiconsIcon icon={GlobeIcon} className={subtleTextClass + " shrink-0"} size={18} />
   }
 
   // Formatear email link
@@ -108,10 +149,17 @@ export default function PhonePreview({ profile, links }: PhonePreviewProps) {
         </div>
 
         {/* Pantalla interna */}
-        <div className="flex-1 w-full h-full overflow-y-auto flex flex-col bg-black text-white select-none custom-scrollbar pb-6 relative">
-          
+        <div
+          className="flex-1 w-full h-full overflow-y-auto flex flex-col text-white select-none custom-scrollbar pb-6 relative"
+          style={getBgStyle()}
+        >
+          {/* Overlay para imagen (75% opacidad) */}
+          {profile.background_type === 'image' && profile.background_url && (
+            <div className="absolute inset-0 bg-black/75 z-0"></div>
+          )}
+
           {/* 1. Header con Imagen Principal */}
-          <div className="relative w-full h-[280px] shrink-0 bg-slate-900 overflow-hidden">
+          <div className="relative w-full h-[280px] shrink-0 bg-slate-900/50 overflow-hidden z-10">
             {profile.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -128,33 +176,42 @@ export default function PhonePreview({ profile, links }: PhonePreviewProps) {
 
             {/* Nombre sobrepuesto */}
             <div className="absolute bottom-1 w-full text-center px-4 z-10">
-              <h3 className="font-bold text-xl tracking-tight text-white drop-shadow-md">
+              <h3 className={`font-bold text-xl tracking-tight drop-shadow-md ${textColorClass}`}>
                 {profile.full_name || `@${profile.username}`}
               </h3>
             </div>
           </div>
 
           {/* 2. Redes Sociales horizontales */}
-          <div className="flex items-center justify-center gap-6 py-4 z-10 bg-black">
+          <div className="flex items-center justify-center gap-6 py-4 z-10">
             {instagramLink && (
-              <a href={instagramLink} target="_blank" rel="noreferrer" className="text-white hover:opacity-80 transition-opacity">
-                <HugeiconsIcon icon={InstagramIcon} className="text-white" size={24} />
+              <a href={instagramLink} target="_blank" rel="noreferrer" className={`${textColorClass} hover:opacity-80 transition-opacity`}>
+                <HugeiconsIcon icon={InstagramIcon} className={textColorClass} size={24} />
               </a>
             )}
             {tiktokLink && (
-              <a href={tiktokLink} target="_blank" rel="noreferrer" className="text-white hover:opacity-80 transition-opacity">
-                <HugeiconsIcon icon={TiktokIcon} className="text-white" size={24} />
+              <a href={tiktokLink} target="_blank" rel="noreferrer" className={`${textColorClass} hover:opacity-80 transition-opacity`}>
+                <HugeiconsIcon icon={TiktokIcon} className={textColorClass} size={24} />
               </a>
             )}
             {emailLink && (
-              <a href={getEmailHref(emailLink)} className="text-white hover:opacity-80 transition-opacity">
-                <HugeiconsIcon icon={MailIcon} className="text-white" size={24} />
+              <a href={getEmailHref(emailLink)} className={`${textColorClass} hover:opacity-80 transition-opacity`}>
+                <HugeiconsIcon icon={MailIcon} className={textColorClass} size={24} />
               </a>
             )}
           </div>
 
+          {/* Bio */}
+          {profile.bio && (
+            <div className="px-6 py-3 z-10">
+              <p className={`text-xs font-medium max-w-sm mx-auto drop-shadow-sm whitespace-pre-wrap text-center ${subtleTextClass}`}>
+                {profile.bio}
+              </p>
+            </div>
+          )}
+
           {/* 3. Enlaces Activos */}
-          <div className="w-full px-6 flex flex-col gap-3">
+          <div className="w-full px-6 flex flex-col gap-3 z-10">
             {activeLinks.length > 0 ? (
               activeLinks.map((link) => (
                 <a
@@ -162,7 +219,7 @@ export default function PhonePreview({ profile, links }: PhonePreviewProps) {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3.5 px-5 bg-white hover:bg-slate-100 text-black rounded-full flex items-center font-bold text-xs tracking-wider uppercase transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-md border-none group relative"
+                  className={`w-full py-3.5 px-5 ${btnBgClass} ${btnTextClass} rounded-full flex items-center font-bold text-xs tracking-wider uppercase transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-md border-none group relative`}
                 >
                   <div className="absolute left-5 flex items-center justify-center w-5 h-5">
                     {getLinkIcon(link.url)}
@@ -185,8 +242,8 @@ export default function PhonePreview({ profile, links }: PhonePreviewProps) {
           </div>
 
           {/* Pie de Página */}
-          <div className="mt-auto pt-8 pb-2 text-center">
-            <span className="text-[9px] font-bold tracking-widest uppercase opacity-30">
+          <div className="mt-auto pt-8 pb-2 text-center z-10">
+            <span className={`text-[9px] font-bold tracking-widest uppercase opacity-30 ${footerTextClass}`}>
               ⚡ tulink.dev by <a href="https://nilspineda.com" target="_blank" rel="noopener noreferrer" className="hover:underline">NilsPineda</a>
             </span>
           </div>

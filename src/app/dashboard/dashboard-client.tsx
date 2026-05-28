@@ -27,7 +27,11 @@ interface ProfileData {
   full_name: string | null
   bio: string | null
   avatar_url: string | null
-  theme_color: string
+  background_type: 'solid' | 'gradient' | 'image'
+  background_color: string
+  background_color_end: string
+  background_url: string | null
+  desktop_layout: 'vertical' | 'bento'
 }
 
 interface DashboardClientProps {
@@ -158,7 +162,7 @@ export default function DashboardClient({
               }`}
             >
               <UserIcon className="w-4 h-4" />
-              <span>Perfil y Temas</span>
+              <span>Perfil</span>
             </button>
           </div>
 

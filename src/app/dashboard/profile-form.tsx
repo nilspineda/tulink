@@ -3,7 +3,7 @@
 import { useState, ChangeEvent } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Loader2, Upload, Trash2, Check } from 'lucide-react'
+import { Loader2, Upload, Trash2, Check, Palette, Image as ImageIcon, Share } from 'lucide-react'
 
 interface ProfileData {
   id: string
@@ -11,7 +11,11 @@ interface ProfileData {
   full_name: string | null
   bio: string | null
   avatar_url: string | null
-  theme_color: string
+  background_type: 'solid' | 'gradient' | 'image'
+  background_color: string
+  background_color_end: string
+  background_url: string | null
+  desktop_layout: 'vertical' | 'bento'
 }
 
 interface ProfileFormProps {
@@ -19,23 +23,30 @@ interface ProfileFormProps {
   onProfileUpdate: (updated: Partial<ProfileData>) => void
 }
 
-const THEME_PRESETS = [
-  { id: 'default', name: 'Original Light', bg: 'bg-slate-100', text: 'text-slate-800', border: 'border-slate-350' },
-  { id: 'darkbento', name: 'Dark Bento', bg: 'bg-zinc-900', text: 'text-zinc-100', border: 'border-zinc-700' },
-  { id: 'glass', name: 'Glassmorphic', bg: 'bg-teal-950', text: 'text-teal-200', border: 'border-teal-800' },
-  { id: 'sunset', name: 'Sunset Minimal', bg: 'bg-amber-100', text: 'text-orange-950', border: 'border-amber-300' },
-  { id: 'cyberpunk', name: 'Cyberpunk', bg: 'bg-purple-950', text: 'text-green-400', border: 'border-pink-650' },
-  { id: 'neobrutalism', name: 'Neo-Brutalism', bg: 'bg-yellow-200', text: 'text-black', border: 'border-black' },
-]
-
 export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormProps) {
   const supabase = createClient()
   const [fullName, setFullName] = useState(profile.full_name || '')
   const [bio, setBio] = useState(profile.bio || '')
   const [isSaving, setIsSaving] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+  const [isUploadingBg, setIsUploadingBg] = useState(false)
 
-  // Guardar Info Básica
+  const [bgType, setBgType] = useState<'solid' | 'gradient' | 'image'>(profile.background_type || 'solid')
+  const [bgColor, setBgColor] = useState(profile.background_color || '#020617')
+  const [bgColorEnd, setBgColorEnd] = useState(profile.background_color_end || '#020617')
+
+  const [desktopLayout, setDesktopLayout] = useState<'vertical' | 'bento'>(profile.desktop_layout || 'vertical')
+
+  const getLuminance = (hex: string) => {
+    const rgb = hex.replace('#', '').match(/.{2}/g)?.map(x => parseInt(x, 16) / 255) || [0, 0, 0]
+    const [r, g, b] = rgb
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+
+  const textColor = (bgType === 'solid' ? getLuminance(bgColor) : getLuminance(bgColorEnd)) > 0.5 ? 'text-slate-900' : 'text-white'
+  const btnBgClass = (bgType === 'solid' ? getLuminance(bgColor) : getLuminance(bgColorEnd)) > 0.5 ? 'bg-slate-900 hover:bg-slate-800' : 'bg-white hover:bg-slate-100'
+  const btnTextClass = (bgType === 'solid' ? getLuminance(bgColor) : getLuminance(bgColorEnd)) > 0.5 ? 'text-white' : 'text-slate-900'
+
   const handleSaveInfo = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
@@ -52,54 +63,77 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       if (error) throw error
 
       onProfileUpdate({ full_name: fullName, bio: bio })
-      toast.success('¡Perfil guardado con éxito!')
+      toast.success('Profile saved successfully!')
     } catch (error: any) {
-      toast.error(`Error al guardar perfil: ${error.message}`)
+      toast.error(`Error saving profile: ${error.message}`)
     } finally {
       setIsSaving(false)
     }
   }
 
-  // Cambio de tema
-  const handleThemeChange = async (themeId: string) => {
+  const handleSaveBackground = async () => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ theme_color: themeId })
+        .update({
+ background_type: bgType,
+          background_color: bgColor,
+          background_color_end: bgColorEnd,
+        })
         .eq('id', profile.id)
 
       if (error) throw error
 
-      onProfileUpdate({ theme_color: themeId })
-      toast.success('Tema actualizado con éxito')
+      onProfileUpdate({
+        background_type: bgType,
+        background_color: bgColor,
+        background_color_end: bgColorEnd,
+      })
+      toast.success('Background updated!')
     } catch (error: any) {
-      toast.error(`Error al actualizar tema: ${error.message}`)
+      toast.error(`Error saving background: ${error.message}`)
     }
   }
 
-  // Subir Avatar
+  const handleSaveDesktopLayout = async () => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ desktop_layout: desktopLayout })
+        .eq('id', profile.id)
+
+      if (error) throw error
+
+      onProfileUpdate({ desktop_layout: desktopLayout })
+      toast.success('Desktop layout updated!')
+    } catch (error: any) {
+      toast.error(`Error saving layout: ${error.message}`)
+    }
+  }
+
   const handleAvatarUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
     const file = e.target.files[0]
-    setIsUploading(true)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image must be under 2 MB')
+      return
+    }
+    setIsUploadingAvatar(true)
 
     try {
       const fileExt = file.name.split('.').pop()
       const fileName = `${profile.id}/avatar_${Date.now()}.${fileExt}`
 
-      // Subir archivo al bucket 'avatars'
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, { upsert: true })
 
       if (uploadError) throw uploadError
 
-      // Obtener URL Pública
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName)
 
-      // Actualizar Base de datos
       const { error: dbError } = await supabase
         .from('profiles')
         .update({ avatar_url: publicUrl })
@@ -108,21 +142,19 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       if (dbError) throw dbError
 
       onProfileUpdate({ avatar_url: publicUrl })
-      toast.success('¡Imagen de perfil subida con éxito!')
+      toast.success('Profile image uploaded!')
     } catch (error: any) {
-      toast.error(`Error al subir imagen: ${error.message}`)
+      toast.error(`Error uploading image: ${error.message}`)
     } finally {
-      setIsUploading(false)
+      setIsUploadingAvatar(false)
     }
   }
 
-  // Eliminar Avatar
   const handleAvatarDelete = async () => {
     if (!profile.avatar_url) return
-    setIsUploading(true)
+    setIsUploadingAvatar(true)
 
     try {
-      // Eliminar el avatar de la base de datos
       const { error: dbError } = await supabase
         .from('profiles')
         .update({ avatar_url: null })
@@ -131,23 +163,98 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       if (dbError) throw dbError
 
       onProfileUpdate({ avatar_url: null })
-      toast.success('Imagen de perfil eliminada.')
+      toast.success('Profile image removed.')
     } catch (error: any) {
-      toast.error(`Error al eliminar imagen: ${error.message}`)
+      toast.error(`Error removing image: ${error.message}`)
     } finally {
-      setIsUploading(false)
+      setIsUploadingAvatar(false)
+    }
+  }
+
+  const handleBackgroundUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return
+    const file = e.target.files[0]
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image must be under 2 MB')
+      return
+    }
+    setIsUploadingBg(true)
+
+    try {
+      if (profile.background_url) {
+        const oldPath = profile.background_url.split('/backgrounds/')[1]
+        if (oldPath) {
+          await supabase.storage.from('backgrounds').remove([oldPath])
+        }
+      }
+
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${profile.id}/background_${Date.now()}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('backgrounds')
+        .upload(fileName, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('backgrounds')
+        .getPublicUrl(fileName)
+
+      const { error: dbError } = await supabase
+        .from('profiles')
+        .update({ background_url: publicUrl, background_type: 'image' })
+        .eq('id', profile.id)
+
+      if (dbError) throw dbError
+
+      setBgType('image')
+      onProfileUpdate({ background_url: publicUrl, background_type: 'image' })
+      toast.success('Profile background uploaded!')
+    } catch (error: any) {
+      toast.error(`Error uploading background: ${error.message}`)
+    } finally {
+      setIsUploadingBg(false)
+    }
+  }
+
+  const handleBackgroundDelete = async () => {
+    setIsUploadingBg(true)
+
+    try {
+      if (profile.background_url) {
+        const oldPath = profile.background_url.split('/backgrounds/')[1]
+        if (oldPath) {
+          await supabase.storage.from('backgrounds').remove([oldPath])
+        }
+      }
+
+      const { error: dbError } = await supabase
+        .from('profiles')
+        .update({ background_url: null, background_type: 'solid', background_color: '#020617', background_color_end: '#020617' })
+        .eq('id', profile.id)
+
+      if (dbError) throw dbError
+
+      setBgType('solid')
+      setBgColor('#020617')
+      setBgColorEnd('#020617')
+      onProfileUpdate({ background_url: null, background_type: 'solid', background_color: '#020617', background_color_end: '#020617' })
+      toast.success('Background removed.')
+    } catch (error: any) {
+      toast.error(`Error removing background: ${error.message}`)
+    } finally {
+      setIsUploadingBg(false)
     }
   }
 
   return (
     <div className="space-y-8">
-      {/* 1. Subir Avatar */}
       <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <h3 className="text-lg font-bold text-white mb-4">Imagen de Perfil</h3>
+        <h3 className="text-lg font-bold text-white mb-4">Profile Image</h3>
         <div className="flex items-center gap-6">
           <div className="relative shrink-0">
             {profile.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={profile.avatar_url}
                 alt={profile.full_name || 'Avatar'}
@@ -158,7 +265,7 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
                 {profile.full_name?.[0]?.toUpperCase() || profile.username?.[0]?.toUpperCase()}
               </div>
             )}
-            {isUploading && (
+            {isUploadingAvatar && (
               <div className="absolute inset-0 bg-slate-950/70 rounded-full flex items-center justify-center">
                 <Loader2 className="w-6 h-6 text-[#28af90] animate-spin" />
               </div>
@@ -168,12 +275,12 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
           <div className="flex flex-wrap gap-3">
             <label className="flex items-center gap-2 bg-[#28af90] hover:bg-[#1e876e] text-white font-semibold text-xs py-2.5 px-4 rounded-xl cursor-pointer transition-colors duration-200">
               <Upload className="w-4 h-4" />
-              <span>Subir foto</span>
+              <span>Upload photo</span>
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleAvatarUpload}
-                disabled={isUploading}
+                disabled={isUploadingAvatar}
                 className="hidden"
               />
             </label>
@@ -182,30 +289,29 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
               <button
                 type="button"
                 onClick={handleAvatarDelete}
-                disabled={isUploading}
+                disabled={isUploadingAvatar}
                 className="flex items-center gap-2 bg-slate-800 hover:bg-red-950/40 hover:text-red-400 hover:border-red-900 border border-slate-700 text-slate-350 font-semibold text-xs py-2.5 px-4 rounded-xl transition-all duration-200 cursor-pointer"
               >
                 <Trash2 className="w-4 h-4" />
-                <span>Eliminar</span>
+                <span>Delete</span>
               </button>
             )}
           </div>
         </div>
       </section>
 
-      {/* 2. Información Básica */}
       <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <h3 className="text-lg font-bold text-white mb-4">Información de Perfil</h3>
+        <h3 className="text-lg font-bold text-white mb-4">Profile Info</h3>
         <form onSubmit={handleSaveInfo} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Nombre a Mostrar
+              Display Name
             </label>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Ej. Juan Pérez"
+              placeholder="e.g. John Smith"
               required
               className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-sm"
             />
@@ -213,18 +319,18 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
 
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Biografía
+              Bio
             </label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="Escribe algo sobre ti..."
+              placeholder="Tell us about yourself..."
               rows={3}
               maxLength={150}
               className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-sm resize-none"
             />
             <p className="text-[10px] text-slate-500 text-right mt-1">
-              {bio.length}/150 caracteres
+              {bio.length}/150 characters
             </p>
           </div>
 
@@ -235,46 +341,249 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
               className="bg-[#28af90] hover:bg-[#1e876e] disabled:bg-[#28af90]/50 disabled:cursor-not-allowed text-white font-semibold text-xs py-2.5 px-5 rounded-xl transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
             >
               {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              <span>Guardar perfil</span>
+              <span>Save profile</span>
             </button>
           </div>
         </form>
       </section>
 
-      {/* 3. Selección de Temas */}
       <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <h3 className="text-lg font-bold text-white mb-2">Diseño y Temas</h3>
+        <h3 className="text-lg font-bold text-white mb-2">Profile Background</h3>
         <p className="text-xs text-slate-400 mb-5">
-          Elige una paleta de colores para tu página de enlaces
+          Customize your public page background
         </p>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {THEME_PRESETS.map((theme) => {
-            const isSelected = profile.theme_color === theme.id
-            return (
-              <button
-                key={theme.id}
-                type="button"
-                onClick={() => handleThemeChange(theme.id)}
-                className={`relative flex flex-col p-4 rounded-xl border text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg cursor-pointer ${
-                  isSelected
-                    ? 'border-[#28af90] ring-2 ring-[#28af90]/20 bg-slate-850'
-                    : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
-                }`}
-              >
-                <div className={`w-full h-8 rounded-md ${theme.bg} ${theme.border} border mb-3 flex items-center justify-center`}>
-                  <span className={`text-[10px] font-bold ${theme.text}`}>Aa</span>
+        <div className="mb-6 flex justify-center">
+          <div
+            className="w-full max-w-xs aspect-[9/16] rounded-2xl overflow-hidden relative"
+            style={
+              bgType === 'solid'
+                ? { backgroundColor: bgColor }
+                : bgType === 'gradient'
+                  ? { background: `linear-gradient(to bottom, ${bgColor}, ${bgColorEnd})` }
+                  : profile.background_url
+                    ? {
+                        backgroundImage: `url(${profile.background_url})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }
+                    : { backgroundColor: '#020617' }
+            }
+          >
+            <div
+              className={`absolute inset-0 flex flex-col items-center justify-center p-4 ${textColor}`}
+              style={bgType === 'image' ? { backgroundColor: 'rgba(0,0,0,0.75)' } : {}}
+            >
+              <div className="w-10 h-10 rounded-full bg-slate-600 mb-2" />
+              <span className="text-xs font-bold">@{profile.username}</span>
+              <div className="mt-3 w-full space-y-2">
+                <div className={`w-full h-8 ${btnBgClass} ${btnTextClass} rounded-full flex items-center justify-center text-[10px] font-bold`}>
+                  Link 1
                 </div>
-                <span className="text-xs font-bold text-white">{theme.name}</span>
-                
-                {isSelected && (
-                  <span className="absolute top-2 right-2 bg-[#28af90] text-white rounded-full p-0.5">
-                    <Check className="w-3 h-3" />
-                  </span>
-                )}
-              </button>
-            )
-          })}
+                <div className={`w-full h-8 ${btnBgClass} ${btnTextClass} rounded-full flex items-center justify-center text-[10px] font-bold`}>
+                  Link 2
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => setBgType('solid')}
+            className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all cursor-pointer ${
+              bgType === 'solid' ? 'border-[#28af90] bg-[#28af90]/10' : 'border-slate-700 bg-slate-950 hover:border-slate-600'
+            }`}
+          >
+            <Palette className={`w-6 h-6 ${bgType === 'solid' ? 'text-[#28af90]' : 'text-slate-400'}`} />
+            <span className="text-xs font-semibold text-white">Solid</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setBgType('gradient')}
+            className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all cursor-pointer ${
+              bgType === 'gradient' ? 'border-[#28af90] bg-[#28af90]/10' : 'border-slate-700 bg-slate-950 hover:border-slate-600'
+            }`}
+          >
+            <Share className={`w-6 h-6 ${bgType === 'gradient' ? 'text-[#28af90]' : 'text-slate-400'}`} />
+            <span className="text-xs font-semibold text-white">Gradient</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setBgType('image')}
+            className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all cursor-pointer ${
+              bgType === 'image' ? 'border-[#28af90] bg-[#28af90]/10' : 'border-slate-700 bg-slate-950 hover:border-slate-600'
+            }`}
+          >
+            <ImageIcon className={`w-6 h-6 ${bgType === 'image' ? 'text-[#28af90]' : 'text-slate-400'}`} />
+            <span className="text-xs font-semibold text-white">Image</span>
+          </button>
+        </div>
+
+        {bgType === 'solid' && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                Background Color
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={bgColor}
+                  onChange={(e) => { setBgColor(e.target.value); setBgColorEnd(e.target.value) }}
+                  className="w-12 h-12 rounded-xl cursor-pointer border-0"
+                />
+                <input
+                  type="text"
+                  value={bgColor}
+                  onChange={(e) => setBgColor(e.target.value)}
+                  className="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white uppercase outline-none focus:border-[#28af90] text-sm font-mono"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {bgType === 'gradient' && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                Top Color
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={bgColor}
+                  onChange={(e) => setBgColor(e.target.value)}
+                  className="w-12 h-12 rounded-xl cursor-pointer border-0"
+                />
+                <input
+                  type="text"
+                  value={bgColor}
+                  onChange={(e) => setBgColor(e.target.value)}
+                  className="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white uppercase outline-none focus:border-[#28af90] text-sm font-mono"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                Bottom Color
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={bgColorEnd}
+                  onChange={(e) => setBgColorEnd(e.target.value)}
+                  className="w-12 h-12 rounded-xl cursor-pointer border-0"
+                />
+                <input
+                  type="text"
+                  value={bgColorEnd}
+                  onChange={(e) => setBgColorEnd(e.target.value)}
+                  className="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white uppercase outline-none focus:border-[#28af90] text-sm font-mono"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {bgType === 'image' && (
+          <div className="space-y-4">
+            {profile.background_url ? (
+              <div className="relative rounded-xl overflow-hidden">
+                <img
+                  src={profile.background_url}
+                  alt="Current background"
+                  className="w-full h-32 object-cover"
+                />
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <span className="text-white text-xs font-semibold">Current background</span>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="flex gap-3">
+              <label className="flex items-center gap-2 bg-[#28af90] hover:bg-[#1e876e] text-white font-semibold text-xs py-2.5 px-4 rounded-xl cursor-pointer transition-colors duration-200 flex-1 justify-center">
+                <Upload className="w-4 h-4" />
+                <span>{profile.background_url ? 'Change background' : 'Upload background'}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBackgroundUpload}
+                  disabled={isUploadingBg}
+                  className="hidden"
+                />
+              </label>
+
+              {profile.background_url && (
+                <button
+                  type="button"
+                  onClick={handleBackgroundDelete}
+                  disabled={isUploadingBg}
+                  className="flex items-center gap-2 bg-slate-800 hover:bg-red-950/40 hover:text-red-400 border border-slate-700 text-slate-350 font-semibold text-xs py-2.5 px-4 rounded-xl transition-all cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            <p className="text-[10px] text-slate-500">Max 2 MB. Recommended: 1080x1920px</p>
+          </div>
+        )}
+
+        {(bgType === 'solid' || bgType === 'gradient') && (
+          <div className="flex items-center justify-end pt-4 mt-4 border-t border-slate-800">
+            <button
+              type="button"
+              onClick={handleSaveBackground}
+              className="bg-[#28af90] hover:bg-[#1e876e] text-white font-semibold text-xs py-2.5 px-5 rounded-xl transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+            >
+              {isUploadingBg && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              <span>Save background</span>
+            </button>
+          </div>
+        )}
+      </section>
+
+      <section className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <h3 className="text-lg font-bold text-white mb-2">Desktop Layout</h3>
+        <p className="text-xs text-slate-400 mb-5">
+          Choose how links appear on desktop
+        </p>
+
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            type="button"
+            onClick={() => setDesktopLayout('vertical')}
+            className={`p-5 rounded-xl border transition-all cursor-pointer relative ${
+              desktopLayout === 'vertical' ? 'border-[#28af90] bg-[#28af90]/10' : 'border-slate-700 bg-slate-950 hover:border-slate-600'
+            }`}
+          >
+            <span className="text-xs font-semibold text-white block text-center">Vertical</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setDesktopLayout('bento')}
+            className={`p-5 rounded-xl border transition-all cursor-pointer relative ${
+              desktopLayout === 'bento' ? 'border-[#28af90] bg-[#28af90]/10' : 'border-slate-700 bg-slate-950 hover:border-slate-600'
+            }`}
+          >
+            <span className="text-xs font-semibold text-white block text-center">Bento</span>
+          </button>
+        </div>
+
+        <div className="flex items-center justify-end pt-4 mt-4 border-t border-slate-800">
+          <button
+            type="button"
+            onClick={handleSaveDesktopLayout}
+            className="bg-[#28af90] hover:bg-[#1e876e] text-white font-semibold text-xs py-2.5 px-5 rounded-xl transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>Save layout</span>
+          </button>
         </div>
       </section>
     </div>
