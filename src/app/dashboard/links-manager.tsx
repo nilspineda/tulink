@@ -436,7 +436,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     }
   }
 
-  const startEditing = (link: LinkItem) => {
+  const startEditing = (link: LinkItem | null) => {
     setEditingId(link.id)
     setEditTitle(link.title)
     setEditUrl(link.url)
