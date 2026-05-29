@@ -2,7 +2,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Users, Eye, Search, LogOut, ArrowLeft, ShieldAlert } from 'lucide-react'
+import { Users, Eye, Search, ArrowLeft, ShieldAlert } from 'lucide-react'
+import UserRow from '@/components/admin/user-row'
 
 interface PageProps {
   searchParams: Promise<{ q?: string }>
@@ -85,19 +86,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
   }
 
   const profilesList = allProfiles || []
-
-  // Extraer WhatsApp de los enlaces
-  const getWhatsApp = (links: { url: string }[] | undefined) => {
-    if (!links || links.length === 0) return null
-    const waLink = links.find((l) => l.url.includes('wa.me') || l.url.includes('whatsapp.com'))
-    if (!waLink) return null
-    const match = waLink.url.match(/wa\.me\/(\d+)/)
-    if (match) {
-      const num = match[1]
-      return `+${num.substring(0, 2)} ${num.substring(2)}`
-    }
-    return waLink.url
-  }
 
   // Calcular métricas
   const totalUsers = profilesList.length
@@ -204,70 +192,17 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Nombre</th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Correo</th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Visitas</th>
+                  <th className="py-4 px-6 w-12"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
                 {profilesList.length > 0 ? (
-                  profilesList.map((userProfile) => {
-                    const registerDate = new Date(userProfile.created_at).toLocaleDateString('es-CO', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })
-
-                    return (
-                      <tr key={userProfile.id} className="hover:bg-slate-850/50 transition-colors">
-                        <td className="py-4 px-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-800 shrink-0 border border-slate-700">
-                              {userProfile.avatar_url ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  src={userProfile.avatar_url}
-                                  alt={userProfile.full_name || userProfile.username}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-slate-500 uppercase">
-                                  {userProfile.username.substring(0, 2)}
-                                </div>
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-bold text-white flex items-center gap-1.5">
-                                <span>{userProfile.full_name || 'Sin nombre'}</span>
-                                {userProfile.is_admin && (
-                                  <span className="text-[9px] bg-red-950/40 border border-red-900/60 text-red-400 font-bold px-1.5 py-0.5 rounded uppercase">
-                                    Admin
-                                  </span>
-                                )}
-                              </div>
-                              <a
-                                href={`/${userProfile.username}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-[#28af90] hover:underline"
-                              >
-                                @{userProfile.username}
-                              </a>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6 text-sm text-slate-350">
-                          {userProfile.email || <span className="opacity-30 italic text-xs">Sin registrar</span>}
-                        </td>
-                        <td className="py-4 px-6 text-sm text-slate-400">
-                          {registerDate}
-                        </td>
-                        <td className="py-4 px-6 text-sm font-bold text-white text-right">
-                          {(userProfile.views || 0).toLocaleString()}
-                        </td>
-                      </tr>
-                    )
-                  })
+                  profilesList.map((userProfile) => (
+                    <UserRow key={userProfile.id} userProfile={userProfile} />
+                  ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="py-16 text-center text-slate-500">
+                    <td colSpan={5} className="py-16 text-center text-slate-500">
                       Ningún usuario coincide con los criterios de búsqueda.
                     </td>
                   </tr>

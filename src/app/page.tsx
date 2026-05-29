@@ -101,6 +101,7 @@ export default async function LandingPage() {
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center text-center px-4 py-16 sm:py-20 relative z-10 w-full max-w-7xl mx-auto">
         <div className="inline-flex items-center gap-1.5 bg-[#28af90]/10 border border-[#28af90]/25 text-[#28af90] font-bold text-[11px] px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-6">
+        <Image src="nilspineda.svg" alt="" width={14} height={14} className="w-3.5 h-3.5" />
           <Sparkles className="w-3.5 h-3.5" />
           <span>Plataforma 100% Personalizable</span>
         </div>

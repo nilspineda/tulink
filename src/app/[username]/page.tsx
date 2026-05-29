@@ -9,6 +9,7 @@ import {
   MailIcon, ShoppingBag01Icon, HandshakeIcon, GlobeIcon, WhatsappIcon
 } from '@hugeicons/core-free-icons'
 import EditButton from '@/components/edit-button'
+import ViewTracker from '@/components/view-tracker'
 
 interface PageProps {
   params: Promise<{ username: string }>
@@ -71,10 +72,6 @@ export default async function UserProfilePage({ params }: PageProps) {
   if (!profile) {
     notFound()
   }
-
-  supabase.rpc('increment_profile_views', { profile_id: profile.id }).then(({ error }) => {
-    if (error) console.error('Error al incrementar vistas:', error)
-  })
 
   const { data: links } = await supabase
     .from('links')
@@ -186,6 +183,8 @@ export default async function UserProfilePage({ params }: PageProps) {
       )}
 
       {isOwner && <EditButton username={profile.username} />}
+
+      <ViewTracker profileId={profile.id} isOwner={isOwner} />
 
       <div className="w-full max-w-md flex flex-col items-center relative z-10">
 
