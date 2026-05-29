@@ -2,11 +2,7 @@
 
 import Link from 'next/link'
 
-interface EditButtonProps {
-  username: string
-}
-
-export default function EditButton({ username }: EditButtonProps) {
+export default function EditButton() {
   return (
     <Link
       href="/dashboard"

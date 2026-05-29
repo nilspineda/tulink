@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Metadata } from 'next'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
@@ -182,7 +182,7 @@ export default async function UserProfilePage({ params }: PageProps) {
         <div className="fixed inset-0 bg-black/75 z-0 pointer-events-none"></div>
       )}
 
-      {isOwner && <EditButton username={profile.username} />}
+      {isOwner && <EditButton />}
 
       <ViewTracker profileId={profile.id} isOwner={isOwner} />
 
@@ -190,8 +190,7 @@ export default async function UserProfilePage({ params }: PageProps) {
 
         <div className="relative w-full aspect-[3/4] max-h-[400px] shrink-0 overflow-hidden rounded-2xl border border-white/10">
           {profile.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={profile.avatar_url} alt={profile.full_name || 'Imagen'} className="w-full h-full object-cover" />
+            <Image src={profile.avatar_url} alt={profile.full_name || 'Imagen'} fill className="object-cover" />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center">
               <span className="text-5xl font-black text-[#28af90]/20 tracking-widest">TULINK</span>

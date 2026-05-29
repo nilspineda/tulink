@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ProfileForm from './profile-form'
@@ -9,7 +9,7 @@ import PhonePreview from './phone-preview'
 import QRModal from '@/components/qr-modal'
 import { 
   LogOut, Link2, User as UserIcon, ArrowLeft, 
-  Smartphone, Edit3, ExternalLink, QrCode 
+  Smartphone, Edit3, ExternalLink, QrCode, Eye
 } from 'lucide-react'
 
 interface LinkItem {
@@ -31,6 +31,7 @@ interface ProfileData {
   background_color: string
   background_color_end: string
   background_url: string | null
+  views: number
 }
 
 interface DashboardClientProps {
@@ -124,6 +125,33 @@ export default function DashboardClient({
             <LogOut className="w-4 h-4" />
             <span>Cerrar Sesión</span>
           </button>
+        </div>
+      </div>
+
+      {/* Estadísticas del Perfil */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center gap-4">
+          <div className="p-3 bg-[#28af90]/10 border border-[#28af90]/25 text-[#28af90] rounded-xl">
+            <Eye className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Visitas a tu perfil</p>
+            <p className="text-2xl font-extrabold text-white mt-0.5">
+              {(profile.views || 0).toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center gap-4">
+          <div className="p-3 bg-blue-500/10 border border-blue-500/25 text-blue-400 rounded-xl">
+            <Link2 className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Enlaces activos</p>
+            <p className="text-2xl font-extrabold text-white mt-0.5">
+              {links.filter((l) => l.active).length} / {links.length}
+            </p>
+          </div>
         </div>
       </div>
 

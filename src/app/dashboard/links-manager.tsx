@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
 import {
-  Plus, Trash2, ArrowUp, ArrowDown, ExternalLink,
+  Plus, ArrowUp, ArrowDown, ExternalLink,
   Check, Loader2, Link2, AlertTriangle, Eye, EyeOff,
   GripVertical
 } from 'lucide-react'
@@ -61,7 +61,7 @@ interface SortableLinkProps {
   editTitle: string
   editUrl: string
   links: LinkItem[]
-  onStartEditing: (link: LinkItem) => void
+  onStartEditing: (link: LinkItem | null) => void
   onSaveEdit: (id: string) => void
   onDeleteLink: (id: string) => void
   onToggleActive: (id: string, currentStatus: boolean) => void
@@ -437,6 +437,12 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
   }
 
   const startEditing = (link: LinkItem | null) => {
+    if (!link) {
+      setEditingId(null)
+      setEditTitle('')
+      setEditUrl('')
+      return
+    }
     setEditingId(link.id)
     setEditTitle(link.title)
     setEditUrl(link.url)
@@ -541,7 +547,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
           <SortableContext items={links.map((l) => l.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-3.5">
               {links.length > 0 ? (
-                links.map((link, idx) => (
+            links.map((link, idx) => (
                   <SortableLink
                     key={link.id}
                     link={link}
@@ -588,7 +594,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
       ) : (
         <div className="space-y-3.5">
           {links.length > 0 ? (
-            links.map((link, idx) => (
+            links.map((link) => (
               <div
                 key={link.id}
                 className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex gap-3 transition-all duration-200"

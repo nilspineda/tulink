@@ -223,7 +223,7 @@ export default async function LandingPage() {
          <div className="mt-12">
           <h3 className="text-sm text-slate-400 uppercase tracking-wider mb-4">Colaboradores Destacados</h3>
           <div className="flex items-center justify-center gap-8">
-            <a href="https://nilspineda.com" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity duration-200"> <img src="nilspineda.svg"  alt="nilspineda.com" className="h-12 sm:h-8" />
+            <a href="https://nilspineda.com" target="_blank" rel="noopener noreferrer" className="opacity-70 hover:opacity-100 transition-opacity duration-200"> <Image src="nilspineda.svg" alt="nilspineda.com" width={48} height={48} className="h-12 sm:h-8" />
 
            </a>
 

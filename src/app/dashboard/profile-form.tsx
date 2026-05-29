@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, ChangeEvent } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Loader2, Upload, Trash2, Palette, Image as ImageIcon, Share } from 'lucide-react'
@@ -236,9 +237,11 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
         <div className="flex items-center gap-6">
           <div className="relative shrink-0">
             {profile.avatar_url ? (
-              <img
+              <Image
                 src={profile.avatar_url}
                 alt={profile.full_name || 'Avatar'}
+                width={80}
+                height={80}
                 className="w-20 h-20 rounded-full object-cover border-2 border-slate-700"
               />
             ) : (
@@ -476,9 +479,11 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
           <div className="space-y-4">
             {profile.background_url ? (
               <div className="relative rounded-xl overflow-hidden">
-                <img
+                <Image
                   src={profile.background_url}
                   alt="Current background"
+                  width={400}
+                  height={128}
                   className="w-full h-32 object-cover"
                 />
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">

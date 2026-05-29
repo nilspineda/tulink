@@ -2,10 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronDown, User, LogOut, ExternalLink, QrCode } from 'lucide-react'
+import { ChevronDown, User, LogOut, ExternalLink } from 'lucide-react'
 
 interface UserData {
   id: string
