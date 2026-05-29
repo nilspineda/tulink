@@ -152,7 +152,6 @@ begin
     'solid',
     '#020617',
     '#020617',
-    'vertical',
     coalesce((new.raw_user_meta_data->>'marketing_consent')::boolean, false)
   );
   return new;
