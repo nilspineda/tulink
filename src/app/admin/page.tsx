@@ -13,7 +13,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const { q = '' } = await searchParams
   const supabase = await createClient()
 
-  // 1. Verificar sesión del usuario
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -22,7 +21,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
     redirect('/login')
   }
 
-  // 2. Verificar rol de administrador
   const { data: profile } = await supabase
     .from('profiles')
     .select('is_admin')
@@ -30,7 +28,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
     .maybeSingle()
 
   if (!profile || !profile.is_admin) {
-    // Retornar pantalla de error 403 Forbidden
     return (
       <main className="min-h-screen w-full bg-slate-950 flex flex-col items-center justify-center p-4">
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl space-y-6">
@@ -40,7 +37,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-white">Acceso Denegado</h1>
             <p className="text-slate-400 text-sm leading-relaxed">
-              No tienes los privilegios necesarios para acceder al panel de administración. Si crees que esto es un error, por favor contacta con soporte.
+              No tienes los privilegios necesarios para acceder al panel de administración.
             </p>
           </div>
           <div className="pt-2">
@@ -57,7 +54,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
     )
   }
 
-  // 3. Obtener todas las cuentas registradas con sus enlaces
   let queryBuilder = supabase
     .from('profiles')
     .select(`
@@ -86,14 +82,11 @@ export default async function AdminPage({ searchParams }: PageProps) {
   }
 
   const profilesList = allProfiles || []
-
-  // Calcular métricas
   const totalUsers = profilesList.length
   const totalViews = profilesList.reduce((acc, curr) => acc + (curr.views || 0), 0)
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      {/* Header */}
       <header className="border-b border-slate-900 bg-slate-950/40 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -124,10 +117,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
         </div>
       </header>
 
-      {/* Main Panel Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        
-        {/* Metricas de Cabecera */}
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex items-center gap-5 shadow-lg">
             <div className="p-4 bg-[#28af90]/10 border border-[#28af90]/25 text-[#28af90] rounded-2xl shrink-0">
@@ -150,7 +140,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </div>
         </section>
 
-        {/* Buscador y Filtro */}
         <section className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
           <form method="GET" className="relative flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
@@ -182,7 +171,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </form>
         </section>
 
-        {/* Tabla de Usuarios */}
         <section className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">

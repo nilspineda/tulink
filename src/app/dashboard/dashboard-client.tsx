@@ -32,6 +32,7 @@ interface ProfileData {
   background_color_end: string
   background_url: string | null
   views: number
+  is_admin: boolean
 }
 
 interface DashboardClientProps {
