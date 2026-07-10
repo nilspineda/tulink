@@ -3,6 +3,8 @@
 import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+const supabase = createClient()
+
 interface ViewTrackerProps {
   profileId: string
   isOwner: boolean
@@ -13,7 +15,6 @@ export default function ViewTracker({ profileId, isOwner }: ViewTrackerProps) {
     if (isOwner) return
 
     const trackView = async () => {
-      const supabase = createClient()
       try {
         await supabase.rpc('increment_profile_views', { profile_id: profileId })
       } catch (error) {

@@ -38,8 +38,8 @@ export async function updateSession(request: NextRequest) {
     user = null
   }
 
-  // Proteger rutas privadas (/dashboard)
-  if (request.nextUrl.pathname.startsWith('/dashboard') && !user) {
+  // Proteger rutas privadas
+  if ((request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/admin')) && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

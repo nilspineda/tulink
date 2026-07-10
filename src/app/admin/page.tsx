@@ -5,12 +5,17 @@ import { createClient } from '@/lib/supabase/server'
 import { Users, Eye, Search, ArrowLeft, ShieldAlert } from 'lucide-react'
 import UserRow from '@/components/admin/user-row'
 
+const PAGE_SIZE = 50
+
 interface PageProps {
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; page?: string }>
 }
 
 export default async function AdminPage({ searchParams }: PageProps) {
-  const { q = '' } = await searchParams
+  const { q = '', page = '1' } = await searchParams
+  const currentPage = Math.max(1, parseInt(page, 10) || 1)
+  const from = (currentPage - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
   const supabase = await createClient()
 
   const {
@@ -54,24 +59,40 @@ export default async function AdminPage({ searchParams }: PageProps) {
     )
   }
 
+  // Obtener métricas globales
+  const { count: totalUsers } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+
+  const { data: allViews } = await supabase
+    .from('profiles')
+    .select('views')
+
+  const totalViews = (allViews || []).reduce((acc, curr) => acc + (curr.views || 0), 0)
+
+  // Query paginada con búsqueda
   let queryBuilder = supabase
     .from('profiles')
     .select(`
-      *,
-      links (
-        url
-      )
+      id, username, full_name, is_admin, views, created_at,
+      links (id, title, url, active, embed_type)
     `)
     .order('created_at', { ascending: false })
+    .range(from, to)
+
+  let countQuery = supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
 
   if (q.trim()) {
     const searchTerm = `%${q.trim().toLowerCase()}%`
-    queryBuilder = queryBuilder.or(
-      `username.ilike.${searchTerm},full_name.ilike.${searchTerm},email.ilike.${searchTerm}`
-    )
+    const filter = `username.ilike.${searchTerm},full_name.ilike.${searchTerm}`
+    queryBuilder = queryBuilder.or(filter)
+    countQuery = countQuery.or(filter)
   }
 
   const { data: allProfiles, error } = await queryBuilder
+  const { count: filteredCount } = await countQuery
 
   if (error) {
     return (
@@ -82,8 +103,10 @@ export default async function AdminPage({ searchParams }: PageProps) {
   }
 
   const profilesList = allProfiles || []
-  const totalUsers = profilesList.length
-  const totalViews = profilesList.reduce((acc, curr) => acc + (curr.views || 0), 0)
+  const totalPages = Math.ceil((filteredCount || 0) / PAGE_SIZE)
+
+  const sp = new URLSearchParams()
+  if (q) sp.set('q', q)
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -99,8 +122,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 priority
                 className="h-8 w-auto"
               />
-            </Link> 
-            
+            </Link>
+
             <span className="text-xs bg-red-950/30 border border-red-900/50 text-red-400 font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
               Admin Panel
             </span>
@@ -118,6 +141,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </header>
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        {/* Metricas de Cabecera */}
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex items-center gap-5 shadow-lg">
             <div className="p-4 bg-[#28af90]/10 border border-[#28af90]/25 text-[#28af90] rounded-2xl shrink-0">
@@ -125,7 +150,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </div>
             <div>
               <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Usuarios Registrados</p>
-              <h3 className="text-3xl font-extrabold text-white mt-1">{totalUsers}</h3>
+              <h3 className="text-3xl font-extrabold text-white mt-1">{totalUsers || 0}</h3>
             </div>
           </div>
 
@@ -140,6 +165,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </div>
         </section>
 
+        {/* Buscador */}
         <section className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
           <form method="GET" className="relative flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
@@ -148,7 +174,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 type="text"
                 name="q"
                 defaultValue={q}
-                placeholder="Buscar por usuario, nombre completo o correo..."
+                placeholder="Buscar por usuario o nombre completo..."
                 className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-650 outline-none focus:border-[#28af90] focus:ring-1 focus:ring-[#28af90] transition-all duration-200 text-sm"
               />
             </div>
@@ -171,6 +197,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </form>
         </section>
 
+        {/* Tabla de Usuarios */}
         <section className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
@@ -178,7 +205,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <tr className="border-b border-slate-800 bg-slate-950/50">
                   <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">WhatsApp</th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Nombre</th>
-                  <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Correo</th>
                   <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Visitas</th>
                   <th className="py-4 px-6 w-12"></th>
                 </tr>
@@ -190,7 +216,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="py-16 text-center text-slate-500">
+                    <td colSpan={4} className="py-16 text-center text-slate-500">
                       Ningún usuario coincide con los criterios de búsqueda.
                     </td>
                   </tr>
@@ -199,6 +225,31 @@ export default async function AdminPage({ searchParams }: PageProps) {
             </table>
           </div>
         </section>
+
+        {/* Paginación */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3">
+            {currentPage > 1 && (
+              <Link
+                href={`/admin?${new URLSearchParams({ ...Object.fromEntries(sp), page: String(currentPage - 1) }).toString()}`}
+                className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-semibold text-sm px-4 py-2 rounded-xl transition-all"
+              >
+                ← Anterior
+              </Link>
+            )}
+            <span className="text-xs text-slate-400">
+              Página {currentPage} de {totalPages}
+            </span>
+            {currentPage < totalPages && (
+              <Link
+                href={`/admin?${new URLSearchParams({ ...Object.fromEntries(sp), page: String(currentPage + 1) }).toString()}`}
+                className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-semibold text-sm px-4 py-2 rounded-xl transition-all"
+              >
+                Siguiente →
+              </Link>
+            )}
+          </div>
+        )}
 
         <footer className="mt-auto pt-8 pb-6 text-center text-xs text-slate-500 border-t border-slate-900">
           <p>

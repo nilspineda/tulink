@@ -59,7 +59,6 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
                   username,
                   full_name: fullName,
                   avatar_url: avatarUrl,
-                  email: user.email || '',
                 }}
               />
             ) : (

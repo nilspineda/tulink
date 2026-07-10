@@ -15,8 +15,7 @@ interface UserProfile {
   id: string
   username: string
   full_name: string | null
-  email: string | null
-  avatar_url: string | null
+  avatar_url?: string | null
   is_admin: boolean
   views: number
   created_at: string
@@ -95,9 +94,6 @@ export default function UserRow({ userProfile }: UserRowProps) {
           >
             @{userProfile.username}
           </a>
-        </td>
-        <td className="py-4 px-6 text-sm text-slate-350">
-          {userProfile.email || <span className="opacity-30 italic text-xs">Sin registrar</span>}
         </td>
         <td className="py-4 px-6 text-sm font-bold text-white text-right">
           {(userProfile.views || 0).toLocaleString()}

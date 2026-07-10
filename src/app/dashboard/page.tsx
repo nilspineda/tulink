@@ -17,7 +17,7 @@ export default async function DashboardPage() {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, username, full_name, bio, avatar_url, background_type, background_color, background_color_end, background_url, views, is_admin')
     .eq('id', user.id)
     .single()
 
@@ -28,7 +28,7 @@ export default async function DashboardPage() {
 
   const { data: links } = await supabase
     .from('links')
-    .select('*')
+    .select('id, title, url, embed_type, active, sort_order')
     .eq('user_id', user.id)
     .order('sort_order', { ascending: true })
 

@@ -371,6 +371,16 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     }
   }
 
+  const batchUpdateSortOrder = async (updatedLinks: LinkItem[]) => {
+    const updates = updatedLinks.map((link) => ({
+      id: link.id,
+      sort_order: link.sort_order,
+    }))
+
+    const { error } = await supabase.rpc('batch_update_link_order', { updates })
+    if (error) throw error
+  }
+
   const handleMove = async (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1
     if (targetIndex < 0 || targetIndex >= links.length) return
@@ -388,13 +398,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     onLinksUpdate(updatedLinks)
 
     try {
-      const updatePromises = updatedLinks.map((link) =>
-        supabase.from('links').update({ sort_order: link.sort_order }).eq('id', link.id)
-      )
-
-      const results = await Promise.all(updatePromises)
-      const error = results.find((r) => r.error)
-      if (error) throw error.error
+      await batchUpdateSortOrder(updatedLinks)
     } catch (error) {
       toast.error(`Error al guardar el orden: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
@@ -424,13 +428,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     onLinksUpdate(updatedLinks)
 
     try {
-      const updatePromises = updatedLinks.map((link) =>
-        supabase.from('links').update({ sort_order: link.sort_order }).eq('id', link.id)
-      )
-
-      const results = await Promise.all(updatePromises)
-      const error = results.find((r) => r.error)
-      if (error) throw error.error
+      await batchUpdateSortOrder(updatedLinks)
     } catch (error) {
       toast.error(`Error al guardar el orden: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }

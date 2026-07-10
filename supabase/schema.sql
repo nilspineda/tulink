@@ -3,11 +3,11 @@
 -- =========================================================
 
 -- 1. Crear la tabla de Perfiles (profiles) si no existe
+-- NOTA: el email se obtiene de auth.users, no se almacena aquí
 create table if not exists public.profiles (
   id uuid references auth.users on delete cascade primary key,
   username text unique not null,
   full_name text,
-  email text,
   bio text,
   avatar_url text,
   background_type text default 'solid' not null,
@@ -22,6 +22,17 @@ create table if not exists public.profiles (
   constraint username_length check (char_length(username) >= 3)
 );
 
+-- Eliminar columna email si existe (migración desde schema anterior)
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'profiles' and column_name = 'email'
+  ) then
+    alter table public.profiles drop column email;
+  end if;
+end $$;
+
 -- Habilitar Row Level Security (profiles)
 alter table public.profiles enable row level security;
 
@@ -30,13 +41,15 @@ drop policy if exists "Cualquiera puede ver perfiles públicos" on public.profil
 drop policy if exists "Los usuarios pueden actualizar su propio perfil" on public.profiles;
 drop policy if exists "Los usuarios pueden insertar su propio perfil" on public.profiles;
 
+-- Público puede ver perfiles (sin email, ya no existe en la tabla)
 create policy "Cualquiera puede ver perfiles públicos"
   on public.profiles for select
   using (true);
 
 create policy "Los usuarios pueden actualizar su propio perfil"
   on public.profiles for update
-  using (auth.uid() = id);
+  using (auth.uid() = id)
+  with check (auth.uid() = id);
 
 create policy "Los usuarios pueden insertar su propio perfil"
   on public.profiles for insert
@@ -64,9 +77,9 @@ drop policy if exists "Los usuarios pueden crear sus propios enlaces" on public.
 drop policy if exists "Los usuarios pueden actualizar sus propios enlaces" on public.links;
 drop policy if exists "Los usuarios pueden eliminar sus propios enlaces" on public.links;
 
-create policy "Cualquiera puede ver los enlaces activos"
+create policy "Cualquiera puede ver enlaces activos, dueño ve todos"
   on public.links for select
-  using (true);
+  using (active = true or auth.uid() = user_id);
 
 create policy "Los usuarios pueden crear sus propios enlaces"
   on public.links for insert
@@ -139,7 +152,7 @@ create policy "Los usuarios autenticados pueden borrar sus fondos"
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, username, full_name, email, avatar_url, background_type, background_color, background_color_end, marketing_consent)
+  insert into public.profiles (id, username, full_name, avatar_url, background_type, background_color, background_color_end, marketing_consent)
   values (
     new.id,
     coalesce(
@@ -147,7 +160,6 @@ begin
       split_part(new.email, '@', 1) || '_' || substr(md5(random()::text), 1, 5)
     ),
     coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
-    new.email,
     new.raw_user_meta_data->>'avatar_url',
     'solid',
     '#020617',
@@ -171,5 +183,26 @@ begin
   update public.profiles
   set views = views + 1
   where id = profile_id;
+end;
+$$ language plpgsql security definer;
+
+
+-- 7. Índices para rendimiento
+create index if not exists idx_links_user_id on public.links(user_id);
+create index if not exists idx_links_user_active_sort on public.links(user_id, active, sort_order);
+create index if not exists idx_profiles_created_at on public.profiles(created_at);
+
+
+-- 8. Función para actualizar sort_order de enlaces en batch (evita N+1)
+create or replace function public.batch_update_link_order(updates jsonb)
+returns void as $$
+declare
+  rec jsonb;
+begin
+  for rec in select * from jsonb_array_elements(updates) loop
+    update public.links
+    set sort_order = (rec->>'sort_order')::integer
+    where id = (rec->>'id')::uuid;
+  end loop;
 end;
 $$ language plpgsql security definer;

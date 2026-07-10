@@ -65,7 +65,7 @@ export default async function UserProfilePage({ params }: PageProps) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, username, full_name, bio, avatar_url, background_type, background_color, background_color_end, background_url, views')
     .eq('username', username.toLowerCase())
     .maybeSingle()
 
@@ -75,7 +75,7 @@ export default async function UserProfilePage({ params }: PageProps) {
 
   const { data: links } = await supabase
     .from('links')
-    .select('*')
+    .select('id, title, url, embed_type, sort_order')
     .eq('user_id', profile.id)
     .eq('active', true)
     .order('sort_order', { ascending: true })
