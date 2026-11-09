@@ -40,11 +40,48 @@ alter table public.profiles enable row level security;
 drop policy if exists "Cualquiera puede ver perfiles públicos" on public.profiles;
 drop policy if exists "Los usuarios pueden actualizar su propio perfil" on public.profiles;
 drop policy if exists "Los usuarios pueden insertar su propio perfil" on public.profiles;
+drop policy if exists "Los usuarios leen su perfil o un admin lee todos" on public.profiles;
 
--- Público puede ver perfiles (sin email, ya no existe en la tabla)
-create policy "Cualquiera puede ver perfiles públicos"
+-- Helper para comprobar si el usuario actual es admin. SECURITY DEFINER y
+-- owned by postgres (bypassa RLS) para evitar recursión en las políticas.
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce((select is_admin from public.profiles where id = auth.uid()), false);
+$$;
+
+revoke all on function public.is_admin() from public;
+grant execute on function public.is_admin() to anon, authenticated;
+
+-- Solo el dueño del perfil o un admin pueden leer la tabla base.
+-- (is_admin / marketing_consent ya no quedan expuestos publicamente)
+create policy "Los usuarios leen su perfil o un admin lee todos"
   on public.profiles for select
-  using (true);
+  using (auth.uid() = id or public.is_admin());
+
+-- Vista pública con SOLO columnas seguras para las páginas de perfil.
+-- Corre con privilegios del owner (bypassa RLS) pero expone pocas columnas.
+create or replace view public.public_profiles as
+select
+  id,
+  username,
+  full_name,
+  bio,
+  avatar_url,
+  background_type,
+  background_color,
+  background_color_end,
+  background_url,
+  views,
+  created_at
+from public.profiles;
+
+revoke all on public.public_profiles from public;
+grant select on public.public_profiles to anon, authenticated;
 
 create policy "Los usuarios pueden actualizar su propio perfil"
   on public.profiles for update

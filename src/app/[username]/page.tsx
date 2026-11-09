@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const supabase = await createClient()
 
   const { data: profile } = await supabase
-    .from('profiles')
+    .from('public_profiles')
     .select('full_name, bio, avatar_url')
     .eq('username', username.toLowerCase())
     .maybeSingle()
@@ -64,7 +64,7 @@ export default async function UserProfilePage({ params }: PageProps) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { data: profile } = await supabase
-    .from('profiles')
+    .from('public_profiles')
     .select('id, username, full_name, bio, avatar_url, background_type, background_color, background_color_end, background_url, views')
     .eq('username', username.toLowerCase())
     .maybeSingle()

@@ -55,7 +55,7 @@ export default function RegisterPage() {
 
     try {
       const { data: profileCheck, error: checkError } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('username')
         .eq('username', values.username.toLowerCase())
         .maybeSingle()
