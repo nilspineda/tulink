@@ -397,7 +397,7 @@ begin
 
   return 'ok';
 end;
-$$ language plpgsql security definer set search_path = public;
+$$;
 
 revoke all on function public.admin_delete_profile(uuid) from public;
 revoke all on function public.admin_delete_profile(uuid) from anon;
