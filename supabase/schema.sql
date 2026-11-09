@@ -330,13 +330,25 @@ grant execute on function public.batch_update_link_order(jsonb) to authenticated
 
 -- 9. Función para que un ADMIN elimine un perfil (y su usuario de auth)
 --    Solo un usuario con is_admin = true puede ejecutarla.
+--    Cada paso va protegido: si uno falla (p. ej. permisos sobre auth.users
+--    o storage.objects) el resto sigue ejecutándose y se devuelve el detalle
+--    del fallo para poder mostrarlo en la UI.
+drop function if exists public.admin_delete_profile(uuid);
+
 create or replace function public.admin_delete_profile(target_id uuid)
-returns void as $$
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_errors text[] := array[]::text[];
 begin
-  if not exists (
-    select 1 from public.profiles
-    where id = auth.uid() and is_admin = true
-  ) then
+  if auth.uid() is null
+     or not exists (
+       select 1 from public.profiles
+       where id = auth.uid() and is_admin = true
+     ) then
     raise exception 'No autorizado' using errcode = '42501';
   end if;
 
@@ -344,16 +356,65 @@ begin
     raise exception 'Un administrador no puede eliminar su propio perfil';
   end if;
 
-  -- Limpieza de almacenamiento (avatares y fondos del usuario)
-  delete from storage.objects
-  where bucket_id in ('avatars', 'backgrounds')
-    and (storage.foldername(name))[1] = target_id::text;
+  -- 1) Limpieza de almacenamiento (avatares y fondos del usuario).
+  --    Best-effort: si el rol no puede tocar storage.objects se ignora.
+  begin
+    delete from storage.objects
+    where bucket_id in ('avatars', 'backgrounds')
+      and (storage.foldername(name))[1] = target_id::text;
+  exception when others then
+    v_errors := v_errors || ('storage: ' || sqlerrm);
+  end;
 
-  -- Borrar usuario de auth: cascade elimina profiles -> links
-  delete from auth.users where id = target_id;
+  -- 2) Borrar el perfil y sus enlaces (FK ON DELETE CASCADE).
+  --    Se hace ANTES de borrar el usuario de auth: el borrado en cascada de
+  --    auth.users dispara un DELETE sobre profiles que choca con las
+  --    políticas RLS (no hay policy de DELETE y la cascada no es SECURITY
+  --    DEFINER). Como owner de la tabla, esta sesión sí puede borrarla.
+  begin
+    delete from public.links where user_id = target_id;
+  exception when others then
+    v_errors := v_errors || ('links: ' || sqlerrm);
+  end;
+
+  begin
+    delete from public.profiles where id = target_id;
+  exception when others then
+    v_errors := v_errors || ('profiles: ' || sqlerrm);
+  end;
+
+  -- 3) Borrar el usuario de auth. Ya no queda perfil, así que la cascada
+  --    no tiene filas que eliminar y no choca con RLS.
+  begin
+    delete from auth.users where id = target_id;
+  exception when others then
+    v_errors := v_errors || ('auth.users: ' || sqlerrm);
+  end;
+
+  if array_length(v_errors, 1) > 0 then
+    return 'Perfil eliminado parcialmente. Detalle: ' || array_to_string(v_errors, ' | ');
+  end if;
+
+  return 'ok';
 end;
 $$ language plpgsql security definer set search_path = public;
 
 revoke all on function public.admin_delete_profile(uuid) from public;
 revoke all on function public.admin_delete_profile(uuid) from anon;
 grant execute on function public.admin_delete_profile(uuid) to authenticated;
+
+-- Permisos para que la RPC pueda borrar usuarios de auth y objetos de storage.
+-- Se ignoran los fallos: la función tiene plan B por paso.
+do $$
+begin
+  execute 'grant delete on table auth.users to postgres';
+exception when others then
+  raise notice 'No se pudo otorgar DELETE sobre auth.users: %', sqlerrm;
+end $$;
+
+do $$
+begin
+  execute 'grant delete on table storage.objects to postgres';
+exception when others then
+  raise notice 'No se pudo otorgar DELETE sobre storage.objects: %', sqlerrm;
+end $$;

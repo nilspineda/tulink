@@ -4,6 +4,7 @@ import { useState, ChangeEvent } from 'react'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { getErrorMessage } from '@/lib/errors'
 import { Loader2, Upload, Trash2, Palette, Image as ImageIcon, Share } from 'lucide-react'
 
 interface ProfileData {
@@ -63,7 +64,7 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       onProfileUpdate({ full_name: fullName, bio: bio })
       toast.success('Profile saved successfully!')
     } catch (error) {
-      toast.error(`Error saving profile: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error saving profile: ${getErrorMessage(error)}`)
     } finally {
       setIsSaving(false)
     }
@@ -89,7 +90,7 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       })
       toast.success('Background updated!')
     } catch (error) {
-      toast.error(`Error saving background: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error saving background: ${getErrorMessage(error)}`)
     }
   }
 
@@ -126,7 +127,7 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       onProfileUpdate({ avatar_url: publicUrl })
       toast.success('Profile image uploaded!')
     } catch (error) {
-      toast.error(`Error uploading image: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error uploading image: ${getErrorMessage(error)}`)
     } finally {
       setIsUploadingAvatar(false)
     }
@@ -147,7 +148,7 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       onProfileUpdate({ avatar_url: null })
       toast.success('Profile image removed.')
     } catch (error) {
-      toast.error(`Error removing image: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error removing image: ${getErrorMessage(error)}`)
     } finally {
       setIsUploadingAvatar(false)
     }
@@ -194,7 +195,7 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       onProfileUpdate({ background_url: publicUrl, background_type: 'image' })
       toast.success('Profile background uploaded!')
     } catch (error) {
-      toast.error(`Error uploading background: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error uploading background: ${getErrorMessage(error)}`)
     } finally {
       setIsUploadingBg(false)
     }
@@ -224,7 +225,7 @@ export default function ProfileForm({ profile, onProfileUpdate }: ProfileFormPro
       onProfileUpdate({ background_url: null, background_type: 'solid', background_color: '#020617', background_color_end: '#020617' })
       toast.success('Background removed.')
     } catch (error) {
-      toast.error(`Error removing background: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error removing background: ${getErrorMessage(error)}`)
     } finally {
       setIsUploadingBg(false)
     }

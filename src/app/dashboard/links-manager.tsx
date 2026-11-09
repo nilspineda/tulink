@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
+import { getErrorMessage } from '@/lib/errors'
 import {
   Plus, ArrowUp, ArrowDown, ExternalLink,
   Check, Loader2, Link2, AlertTriangle, Eye, EyeOff,
@@ -304,7 +305,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
       setIsAdding(false)
       toast.success('¡Enlace añadido con éxito!')
     } catch (error) {
-      toast.error(`Error al añadir enlace: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error al añadir enlace: ${getErrorMessage(error)}`)
     } finally {
       setIsLoading(false)
     }
@@ -331,7 +332,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
       setEditingId(null)
       toast.success('¡Enlace actualizado!')
     } catch (error) {
-      toast.error(`Error al actualizar enlace: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error al actualizar enlace: ${getErrorMessage(error)}`)
     }
   }
 
@@ -343,7 +344,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
       onLinksUpdate(links.filter((link) => link.id !== id))
       toast.success('Enlace eliminado')
     } catch (error) {
-      toast.error(`Error al eliminar enlace: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error al eliminar enlace: ${getErrorMessage(error)}`)
     }
   }
 
@@ -367,7 +368,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
         throw error
       }
     } catch (error) {
-      toast.error(`Error al cambiar estado del enlace: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error al cambiar estado del enlace: ${getErrorMessage(error)}`)
     }
   }
 
@@ -400,7 +401,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     try {
       await batchUpdateSortOrder(updatedLinks)
     } catch (error) {
-      toast.error(`Error al guardar el orden: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error al guardar el orden: ${getErrorMessage(error)}`)
     }
   }
 
@@ -430,7 +431,7 @@ export default function LinksManager({ userId, links, onLinksUpdate }: LinksMana
     try {
       await batchUpdateSortOrder(updatedLinks)
     } catch (error) {
-      toast.error(`Error al guardar el orden: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Error al guardar el orden: ${getErrorMessage(error)}`)
     }
   }
 

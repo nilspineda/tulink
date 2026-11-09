@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, ExternalLink, Calendar, Link2, Eye, Trash2, Loa
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { formatDateLong, formatNumber } from '@/lib/format'
+import { getErrorMessage } from '@/lib/errors'
 
 interface Link {
   id: string
@@ -58,18 +59,22 @@ export default function UserRow({ userProfile }: UserRowProps) {
 
     setIsDeleting(true)
     try {
-      const { error } = await supabase.rpc('admin_delete_profile', {
+      const { data, error } = await supabase.rpc('admin_delete_profile', {
         target_id: userProfile.id,
       })
 
       if (error) throw error
 
-      toast.success(`Perfil @${userProfile.username} eliminado`)
+      const message = typeof data === 'string' ? data : 'ok'
+
+      if (message !== 'ok') {
+        toast.warning(message)
+      } else {
+        toast.success(`Perfil @${userProfile.username} eliminado`)
+      }
       router.refresh()
     } catch (error) {
-      toast.error(
-        `Error al eliminar perfil: ${error instanceof Error ? error.message : 'Unknown error'}`
-      )
+      toast.error(`Error al eliminar perfil: ${getErrorMessage(error)}`)
       setIsDeleting(false)
     }
   }
