@@ -85,7 +85,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
     .select('*', { count: 'exact', head: true })
 
   if (q.trim()) {
-    const searchTerm = `%${q.trim().toLowerCase()}%`
+    const sanitized = q.trim().toLowerCase().replace(/[,()*\\%]/g, '')
+    const searchTerm = `%${sanitized}%`
     const filter = `username.ilike.${searchTerm},full_name.ilike.${searchTerm}`
     queryBuilder = queryBuilder.or(filter)
     countQuery = countQuery.or(filter)

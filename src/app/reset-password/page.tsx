@@ -13,8 +13,13 @@ import Image from 'next/image'
 
 const resetPasswordSchema = z
   .object({
-    password: z.string().min(6, { message: 'La contraseña debe tener al menos 6 caracteres' }),
-    confirmPassword: z.string().min(6, { message: 'La confirmación debe tener al menos 6 caracteres' }),
+    password: z
+      .string()
+      .min(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
+        message: 'Debe incluir mayúscula, minúscula y número',
+      }),
+    confirmPassword: z.string().min(8, { message: 'La confirmación debe tener al menos 8 caracteres' }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Las contraseñas no coinciden',

@@ -1,7 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, ExternalLink, Calendar, Link2, Eye } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ChevronDown, ChevronUp, ExternalLink, Calendar, Link2, Eye, Trash2, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
 import { formatDateLong, formatNumber } from '@/lib/format'
 
 interface Link {
@@ -41,6 +44,35 @@ function getWhatsAppFromLinks(links: Link[] | undefined): string | null {
 
 export default function UserRow({ userProfile }: UserRowProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+
+    const confirmed = window.confirm(
+      `¿Eliminar el perfil de @${userProfile.username}? Esta acción es permanente y borrará también sus enlaces.`
+    )
+    if (!confirmed) return
+
+    setIsDeleting(true)
+    try {
+      const { error } = await supabase.rpc('admin_delete_profile', {
+        target_id: userProfile.id,
+      })
+
+      if (error) throw error
+
+      toast.success(`Perfil @${userProfile.username} eliminado`)
+      router.refresh()
+    } catch (error) {
+      toast.error(
+        `Error al eliminar perfil: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
+      setIsDeleting(false)
+    }
+  }
 
   const whatsapp = getWhatsAppFromLinks(userProfile.links)
   const registerDate = formatDateLong(userProfile.created_at)
@@ -96,15 +128,29 @@ export default function UserRow({ userProfile }: UserRowProps) {
           {formatNumber(userProfile.views)}
         </td>
         <td className="py-4 px-6 text-right">
-          <button className="text-slate-400 hover:text-white transition-colors p-1">
-            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
+          <div className="flex items-center justify-end gap-1">
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting || userProfile.is_admin}
+              title={userProfile.is_admin ? 'No se puede eliminar a un administrador' : 'Eliminar perfil'}
+              className="text-slate-500 hover:text-red-400 disabled:opacity-30 disabled:hover:text-slate-500 transition-colors p-1 cursor-pointer disabled:cursor-not-allowed"
+            >
+              {isDeleting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+            </button>
+            <button className="text-slate-400 hover:text-white transition-colors p-1">
+              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
         </td>
       </tr>
 
       {isExpanded && (
         <tr className="bg-slate-900/50">
-          <td colSpan={5} className="px-6 py-6">
+          <td colSpan={4} className="px-6 py-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-center gap-3">
                 <div className="p-2 bg-[#28af90]/10 border border-[#28af90]/25 text-[#28af90] rounded-lg">

@@ -4,13 +4,17 @@ import { updateSession } from '@/lib/supabase/middleware'
 const ipRequestMap = new Map<string, { count: number; resetTime: number }>()
 
 function getIp(request: NextRequest): string {
-  const xForwardedFor = request.headers.get('x-forwarded-for')
-  if (xForwardedFor) {
-    return xForwardedFor.split(',')[0].trim()
-  }
+  // x-real-ip lo fija el proxy de confianza (p. ej. Vercel); es preferible
+  // a x-forwarded-for, cuyo primer valor puede ser falsificado por el cliente.
   const xRealIp = request.headers.get('x-real-ip')
   if (xRealIp) {
-    return xRealIp
+    return xRealIp.trim()
+  }
+  const xForwardedFor = request.headers.get('x-forwarded-for')
+  if (xForwardedFor) {
+    const parts = xForwardedFor.split(',').map((p) => p.trim()).filter(Boolean)
+    // El último salto lo añade el proxy de confianza, no el cliente.
+    return parts.length > 0 ? parts[parts.length - 1] : '127.0.0.1'
   }
   return '127.0.0.1'
 }

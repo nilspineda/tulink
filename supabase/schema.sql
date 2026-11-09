@@ -53,7 +53,39 @@ create policy "Los usuarios pueden actualizar su propio perfil"
 
 create policy "Los usuarios pueden insertar su propio perfil"
   on public.profiles for insert
-  with check (auth.uid() = id);
+  with check (auth.uid() = id and is_admin = false);
+
+-- Protección anti-escalada de privilegios: un usuario normal NO puede
+-- cambiar su propia columna is_admin ni inflar manualmente sus vistas.
+create or replace function public.protect_profile_admin_flag()
+returns trigger as $$
+begin
+  if auth.uid() is not null then
+    if new.is_admin is distinct from old.is_admin
+       and not exists (
+         select 1 from public.profiles
+         where id = auth.uid() and is_admin = true
+       ) then
+      new.is_admin := old.is_admin;
+    end if;
+
+    if new.views is distinct from old.views
+       and coalesce(current_setting('tulink.allow_views_update', true), '') <> 'on'
+       and not exists (
+         select 1 from public.profiles
+         where id = auth.uid() and is_admin = true
+       ) then
+      new.views := old.views;
+    end if;
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+drop trigger if exists protect_profile_admin_flag on public.profiles;
+create trigger protect_profile_admin_flag
+  before update on public.profiles
+  for each row execute procedure public.protect_profile_admin_flag();
 
 
 -- 2. Crear la tabla de Enlaces (links)
@@ -87,7 +119,8 @@ create policy "Los usuarios pueden crear sus propios enlaces"
 
 create policy "Los usuarios pueden actualizar sus propios enlaces"
   on public.links for update
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 create policy "Los usuarios pueden eliminar sus propios enlaces"
   on public.links for delete
@@ -114,7 +147,8 @@ create policy "Los usuarios autenticados pueden subir fotos"
 
 create policy "Los usuarios autenticados pueden actualizar sus fotos"
   on storage.objects for update
-  using (bucket_id = 'avatars' and auth.role() = 'authenticated' and (storage.foldername(name))[1] = auth.uid()::text);
+  using (bucket_id = 'avatars' and auth.role() = 'authenticated' and (storage.foldername(name))[1] = auth.uid()::text)
+  with check (bucket_id = 'avatars' and auth.role() = 'authenticated' and (storage.foldername(name))[1] = auth.uid()::text);
 
 create policy "Los usuarios autenticados pueden borrar sus fotos"
   on storage.objects for delete
@@ -141,7 +175,8 @@ create policy "Los usuarios autenticados pueden subir fondos"
 
 create policy "Los usuarios autenticados pueden actualizar sus fondos"
   on storage.objects for update
-  using (bucket_id = 'backgrounds' and auth.role() = 'authenticated' and (storage.foldername(name))[1] = auth.uid()::text);
+  using (bucket_id = 'backgrounds' and auth.role() = 'authenticated' and (storage.foldername(name))[1] = auth.uid()::text)
+  with check (bucket_id = 'backgrounds' and auth.role() = 'authenticated' and (storage.foldername(name))[1] = auth.uid()::text);
 
 create policy "Los usuarios autenticados pueden borrar sus fondos"
   on storage.objects for delete
@@ -149,26 +184,58 @@ create policy "Los usuarios autenticados pueden borrar sus fondos"
 
 
 -- 5. Trigger para crear automáticamente el perfil del usuario al registrarse
+--    El username se sanea en servidor: aunque alguien llame a auth.signUp
+--    directamente con metadata arbitraria, el formato se normaliza.
 create or replace function public.handle_new_user()
 returns trigger as $$
+declare
+  raw_username text;
+  clean_username text;
+  fallback_username text;
 begin
+  raw_username := lower(coalesce(new.raw_user_meta_data->>'username', ''));
+  clean_username := regexp_replace(raw_username, '[^a-z0-9_]', '', 'g');
+
+  fallback_username := 'u_' || substr(md5(random()::text), 1, 10);
+
+  if char_length(clean_username) < 3 then
+    clean_username := fallback_username;
+  else
+    clean_username := left(clean_username, 24);
+  end if;
+
   insert into public.profiles (id, username, full_name, avatar_url, background_type, background_color, background_color_end, marketing_consent)
   values (
     new.id,
-    coalesce(
-      new.raw_user_meta_data->>'username',
-      split_part(new.email, '@', 1) || '_' || substr(md5(random()::text), 1, 5)
-    ),
+    clean_username,
     coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
     new.raw_user_meta_data->>'avatar_url',
     'solid',
     '#020617',
     '#020617',
     coalesce((new.raw_user_meta_data->>'marketing_consent')::boolean, false)
-  );
+  )
+  on conflict (id) do nothing;
+
   return new;
+exception
+  when unique_violation then
+    -- El username ya está tomado: usar uno aleatorio para no romper el signup.
+    insert into public.profiles (id, username, full_name, avatar_url, background_type, background_color, background_color_end, marketing_consent)
+    values (
+      new.id,
+      fallback_username,
+      coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+      new.raw_user_meta_data->>'avatar_url',
+      'solid',
+      '#020617',
+      '#020617',
+      coalesce((new.raw_user_meta_data->>'marketing_consent')::boolean, false)
+    )
+    on conflict (id) do nothing;
+    return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
@@ -177,14 +244,25 @@ create trigger on_auth_user_created
 
 
 -- 6. Función para incrementar vistas de perfiles
+--    Solo cuenta 1 visita por llamada; el flag de sesión permite al trigger
+--    de protección aceptar este incremento aunque lo invoque un visitante.
 create or replace function public.increment_profile_views(profile_id uuid)
 returns void as $$
 begin
+  perform set_config('tulink.allow_views_update', 'on', true);
+
   update public.profiles
   set views = views + 1
   where id = profile_id;
+
+  perform set_config('tulink.allow_views_update', 'off', true);
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
+
+revoke all on function public.increment_profile_views(uuid) from public;
+revoke all on function public.increment_profile_views(uuid) from anon;
+revoke all on function public.increment_profile_views(uuid) from authenticated;
+grant execute on function public.increment_profile_views(uuid) to anon, authenticated;
 
 
 -- 7. Índices para rendimiento
@@ -202,7 +280,43 @@ begin
   for rec in select * from jsonb_array_elements(updates) loop
     update public.links
     set sort_order = (rec->>'sort_order')::integer
-    where id = (rec->>'id')::uuid;
+    where id = (rec->>'id')::uuid
+      and user_id = auth.uid();
   end loop;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
+
+revoke all on function public.batch_update_link_order(jsonb) from public;
+revoke all on function public.batch_update_link_order(jsonb) from anon;
+grant execute on function public.batch_update_link_order(jsonb) to authenticated;
+
+
+-- 9. Función para que un ADMIN elimine un perfil (y su usuario de auth)
+--    Solo un usuario con is_admin = true puede ejecutarla.
+create or replace function public.admin_delete_profile(target_id uuid)
+returns void as $$
+begin
+  if not exists (
+    select 1 from public.profiles
+    where id = auth.uid() and is_admin = true
+  ) then
+    raise exception 'No autorizado' using errcode = '42501';
+  end if;
+
+  if target_id = auth.uid() then
+    raise exception 'Un administrador no puede eliminar su propio perfil';
+  end if;
+
+  -- Limpieza de almacenamiento (avatares y fondos del usuario)
+  delete from storage.objects
+  where bucket_id in ('avatars', 'backgrounds')
+    and (storage.foldername(name))[1] = target_id::text;
+
+  -- Borrar usuario de auth: cascade elimina profiles -> links
+  delete from auth.users where id = target_id;
+end;
+$$ language plpgsql security definer set search_path = public;
+
+revoke all on function public.admin_delete_profile(uuid) from public;
+revoke all on function public.admin_delete_profile(uuid) from anon;
+grant execute on function public.admin_delete_profile(uuid) to authenticated;
