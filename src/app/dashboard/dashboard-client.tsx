@@ -7,6 +7,8 @@ import ProfileForm from './profile-form'
 import LinksManager from './links-manager'
 import PhonePreview from './phone-preview'
 import QRModal from '@/components/qr-modal'
+import { formatNumber } from '@/lib/format'
+import { useBrowserOrigin } from '@/lib/use-origin'
 import { 
   LogOut, Link2, User as UserIcon, ArrowLeft, 
   Smartphone, Edit3, ExternalLink, QrCode, Eye
@@ -51,7 +53,7 @@ export default function DashboardClient({
   const [activeTab, setActiveTab] = useState<'links' | 'profile'>('links')
   const [showMobilePreview, setShowMobilePreview] = useState(false)
   const [showQRModal, setShowQRModal] = useState(false)
-  const [origin] = useState(typeof window !== 'undefined' ? window.location.origin : '')
+  const origin = useBrowserOrigin()
 
   // Cerrar Sesión
   const handleSignOut = async () => {
@@ -138,7 +140,7 @@ export default function DashboardClient({
           <div>
             <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Visitas a tu perfil</p>
             <p className="text-2xl font-extrabold text-white mt-0.5">
-              {(profile.views || 0).toLocaleString()}
+              {formatNumber(profile.views)}
             </p>
           </div>
         </div>

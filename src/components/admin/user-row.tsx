@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, ExternalLink, Calendar, Link2, Eye } from 'lucide-react'
+import { formatDateLong, formatNumber } from '@/lib/format'
 
 interface Link {
   id: string
@@ -42,11 +43,7 @@ export default function UserRow({ userProfile }: UserRowProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const whatsapp = getWhatsAppFromLinks(userProfile.links)
-  const registerDate = new Date(userProfile.created_at).toLocaleDateString('es-CO', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  const registerDate = formatDateLong(userProfile.created_at)
   const linksCount = userProfile.links?.length || 0
   const activeLinksCount = userProfile.links?.filter((l) => l.active).length || 0
 
@@ -96,7 +93,7 @@ export default function UserRow({ userProfile }: UserRowProps) {
           </a>
         </td>
         <td className="py-4 px-6 text-sm font-bold text-white text-right">
-          {(userProfile.views || 0).toLocaleString()}
+          {formatNumber(userProfile.views)}
         </td>
         <td className="py-4 px-6 text-right">
           <button className="text-slate-400 hover:text-white transition-colors p-1">
@@ -115,7 +112,7 @@ export default function UserRow({ userProfile }: UserRowProps) {
                 </div>
                 <div>
                   <p className="text-[10px] text-slate-500 uppercase font-semibold tracking-wider">Visitas Totales</p>
-                  <p className="text-xl font-bold text-white">{(userProfile.views || 0).toLocaleString()}</p>
+                  <p className="text-xl font-bold text-white">{formatNumber(userProfile.views)}</p>
                 </div>
               </div>
 
